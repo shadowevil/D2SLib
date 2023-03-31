@@ -8,7 +8,6 @@ Simple C# library for reading and writing Diablo 2 saves. Supports version 1.10 
 
 
 ### Usage
-Use [Nuget](https://www.nuget.org/packages/D2SLib/) to add D2SLib to your project.
 
 ```
 using D2SLib;

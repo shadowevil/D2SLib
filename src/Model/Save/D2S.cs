@@ -1,5 +1,5 @@
 ﻿using D2SLib.IO;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+using CommunityToolkit.HighPerformance.Buffers;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 

@@ -1,6 +1,6 @@
 ﻿using D2SLib.IO;
 using D2SLib.Model.Save;
-using Microsoft.Toolkit.HighPerformance.Buffers;
+using CommunityToolkit.HighPerformance.Buffers;
 
 namespace D2SLib;
 

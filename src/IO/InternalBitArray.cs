@@ -4,7 +4,7 @@
 // Adapted from here, to allow for span-based constructor. Removed unused/unsafe code.
 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Collections/src/System/Collections/BitArray.cs
 
-using Microsoft.Toolkit.HighPerformance;
+using CommunityToolkit.HighPerformance;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections;

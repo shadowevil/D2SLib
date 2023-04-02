@@ -9,7 +9,7 @@ public partial class Hirelingdesc
 
     public long? HcIdx { get; set; }
 
-    public string? AlternateVoice { get; set; }
+    public long? AlternateVoice { get; set; }
 
     public string? Eol { get; set; }
 }

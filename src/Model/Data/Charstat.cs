@@ -73,7 +73,7 @@ public partial class Charstat
 
     public string? Skill9 { get; set; }
 
-    public string? Skill10 { get; set; }
+    public long? Skill10 { get; set; }
 
     public string? StrAllSkills { get; set; }
 
@@ -109,7 +109,7 @@ public partial class Charstat
 
     public string? Item3 { get; set; }
 
-    public string? Item3loc { get; set; }
+    public long? Item3loc { get; set; }
 
     public long? Item3count { get; set; }
 
@@ -117,7 +117,7 @@ public partial class Charstat
 
     public string? Item4 { get; set; }
 
-    public string? Item4loc { get; set; }
+    public long? Item4loc { get; set; }
 
     public long? Item4count { get; set; }
 
@@ -125,7 +125,7 @@ public partial class Charstat
 
     public string? Item5 { get; set; }
 
-    public string? Item5loc { get; set; }
+    public long? Item5loc { get; set; }
 
     public long? Item5count { get; set; }
 
@@ -133,7 +133,7 @@ public partial class Charstat
 
     public string? Item6 { get; set; }
 
-    public string? Item6loc { get; set; }
+    public long? Item6loc { get; set; }
 
     public string? Item6count { get; set; }
 
@@ -141,7 +141,7 @@ public partial class Charstat
 
     public string? Item7 { get; set; }
 
-    public string? Item7loc { get; set; }
+    public long? Item7loc { get; set; }
 
     public string? Item7count { get; set; }
 
@@ -149,7 +149,7 @@ public partial class Charstat
 
     public string? Item8 { get; set; }
 
-    public string? Item8loc { get; set; }
+    public long? Item8loc { get; set; }
 
     public string? Item8count { get; set; }
 
@@ -157,7 +157,7 @@ public partial class Charstat
 
     public string? Item9 { get; set; }
 
-    public string? Item9loc { get; set; }
+    public long? Item9loc { get; set; }
 
     public string? Item9count { get; set; }
 
@@ -165,7 +165,7 @@ public partial class Charstat
 
     public string? Item10 { get; set; }
 
-    public string? Item10loc { get; set; }
+    public long? Item10loc { get; set; }
 
     public string? Item10count { get; set; }
 

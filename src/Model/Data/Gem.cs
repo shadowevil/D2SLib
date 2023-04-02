@@ -25,9 +25,9 @@ public partial class Gem
 
     public string? WeaponMod2Param { get; set; }
 
-    public string? WeaponMod2Min { get; set; }
+    public long? WeaponMod2Min { get; set; }
 
-    public string? WeaponMod2Max { get; set; }
+    public long? WeaponMod2Max { get; set; }
 
     public string? WeaponMod3Code { get; set; }
 
@@ -53,7 +53,7 @@ public partial class Gem
 
     public string? HelmMod2Max { get; set; }
 
-    public string? HelmMod3Code { get; set; }
+    public long? HelmMod3Code { get; set; }
 
     public string? HelmMod3Param { get; set; }
 
@@ -77,7 +77,7 @@ public partial class Gem
 
     public string? ShieldMod2Max { get; set; }
 
-    public string? ShieldMod3Code { get; set; }
+    public long? ShieldMod3Code { get; set; }
 
     public string? ShieldMod3Param { get; set; }
 

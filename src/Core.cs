@@ -1,16 +1,25 @@
 ﻿using D2SLib.IO;
 using D2SLib.Model.Save;
 using CommunityToolkit.HighPerformance.Buffers;
+using Microsoft.EntityFrameworkCore;
+using D2SLib.Model.Data;
 
 namespace D2SLib;
 
 public class Core
 {
-    private static MetaData? _metaData = null;
-    public static MetaData MetaData
+    //private static MetaData? _metaData = null;
+    //public static MetaData MetaData
+    //{
+    //    get => _metaData ?? ResourceFilesData.Instance.MetaData;
+    //    set => _metaData = value;
+    //}
+
+    private static DatabaseContext? sqlContext = null;
+    public static DatabaseContext SqlContext
     {
-        get => _metaData ?? ResourceFilesData.Instance.MetaData;
-        set => _metaData = value;
+        get => sqlContext ?? new DatabaseContext();
+        set => sqlContext = value;
     }
 
     public static D2S ReadD2S(string path) => D2S.Read(File.ReadAllBytes(path));

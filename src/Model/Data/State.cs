@@ -9,87 +9,87 @@ public partial class State
 
     public long? Id { get; set; }
 
-    public string? Group { get; set; }
+    public long? Group { get; set; }
 
-    public string? Remhit { get; set; }
+    public long? Remhit { get; set; }
 
-    public string? Nosend { get; set; }
+    public long? Nosend { get; set; }
 
-    public string? Transform { get; set; }
+    public long? Transform { get; set; }
 
-    public string? Aura { get; set; }
+    public long? Aura { get; set; }
 
-    public string? Curable { get; set; }
+    public long? Curable { get; set; }
 
-    public string? Curse { get; set; }
+    public long? Curse { get; set; }
 
-    public string? Active { get; set; }
+    public long? Active { get; set; }
 
-    public string? Restrict { get; set; }
+    public long? Restrict { get; set; }
 
-    public string? Disguise { get; set; }
+    public long? Disguise { get; set; }
 
-    public string? Attblue { get; set; }
+    public long? Attblue { get; set; }
 
-    public string? Damblue { get; set; }
+    public long? Damblue { get; set; }
 
-    public string? Armblue { get; set; }
+    public long? Armblue { get; set; }
 
-    public string? Rfblue { get; set; }
+    public long? Rfblue { get; set; }
 
-    public string? Rlblue { get; set; }
+    public long? Rlblue { get; set; }
 
-    public string? Rcblue { get; set; }
+    public long? Rcblue { get; set; }
 
-    public string? Stambarblue { get; set; }
+    public long? Stambarblue { get; set; }
 
-    public string? Rpblue { get; set; }
+    public long? Rpblue { get; set; }
 
-    public string? Attred { get; set; }
+    public long? Attred { get; set; }
 
-    public string? Damred { get; set; }
+    public long? Damred { get; set; }
 
-    public string? Armred { get; set; }
+    public long? Armred { get; set; }
 
-    public string? Rfred { get; set; }
+    public long? Rfred { get; set; }
 
-    public string? Rlred { get; set; }
+    public long? Rlred { get; set; }
 
-    public string? Rcred { get; set; }
+    public long? Rcred { get; set; }
 
-    public string? Rpred { get; set; }
+    public long? Rpred { get; set; }
 
-    public string? Exp { get; set; }
+    public long? Exp { get; set; }
 
-    public string? Plrstaydeath { get; set; }
+    public long? Plrstaydeath { get; set; }
 
-    public string? Monstaydeath { get; set; }
+    public long? Monstaydeath { get; set; }
 
-    public string? Bossstaydeath { get; set; }
+    public long? Bossstaydeath { get; set; }
 
-    public string? Hide { get; set; }
+    public long? Hide { get; set; }
 
-    public string? Hidedead { get; set; }
+    public long? Hidedead { get; set; }
 
-    public string? Shatter { get; set; }
+    public long? Shatter { get; set; }
 
-    public string? Udead { get; set; }
+    public long? Udead { get; set; }
 
-    public string? Life { get; set; }
+    public long? Life { get; set; }
 
-    public string? Green { get; set; }
+    public long? Green { get; set; }
 
-    public string? Pgsv { get; set; }
+    public long? Pgsv { get; set; }
 
-    public string? Nooverlays { get; set; }
+    public long? Nooverlays { get; set; }
 
-    public string? Noclear { get; set; }
+    public long? Noclear { get; set; }
 
-    public string? Bossinv { get; set; }
+    public long? Bossinv { get; set; }
 
-    public string? Meleeonly { get; set; }
+    public long? Meleeonly { get; set; }
 
-    public string? Notondead { get; set; }
+    public long? Notondead { get; set; }
 
     public string? Overlay1 { get; set; }
 
@@ -107,9 +107,9 @@ public partial class State
 
     public string? Stat { get; set; }
 
-    public string? Setfunc { get; set; }
+    public long? Setfunc { get; set; }
 
-    public string? Remfunc { get; set; }
+    public long? Remfunc { get; set; }
 
     public string? Missile { get; set; }
 
@@ -119,37 +119,37 @@ public partial class State
 
     public string? Itemtrans { get; set; }
 
-    public string? Colorpri { get; set; }
+    public long? Colorpri { get; set; }
 
-    public string? Colorshift { get; set; }
+    public long? Colorshift { get; set; }
 
-    public string? LightR { get; set; }
+    public long? LightR { get; set; }
 
-    public string? LightG { get; set; }
+    public long? LightG { get; set; }
 
-    public string? LightB { get; set; }
+    public long? LightB { get; set; }
 
     public string? Onsound { get; set; }
 
     public string? Offsound { get; set; }
 
-    public string? Gfxtype { get; set; }
+    public long? Gfxtype { get; set; }
 
-    public string? Gfxclass { get; set; }
+    public long? Gfxclass { get; set; }
 
     public string? Cltevent { get; set; }
 
-    public string? Clteventfunc { get; set; }
+    public long? Clteventfunc { get; set; }
 
-    public string? Cltactivefunc { get; set; }
+    public long? Cltactivefunc { get; set; }
 
-    public string? Srvactivefunc { get; set; }
+    public long? Srvactivefunc { get; set; }
 
-    public string? Canstack { get; set; }
+    public long? Canstack { get; set; }
 
-    public string? Sunderfull { get; set; }
+    public long? Sunderfull { get; set; }
 
-    public string? SunderResReduce { get; set; }
+    public long? SunderResReduce { get; set; }
 
     public string? Eol { get; set; }
 }

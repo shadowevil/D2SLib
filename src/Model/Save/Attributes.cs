@@ -10,7 +10,6 @@ public class Attributes
 
     public static Attributes Read(IBitReader reader)
     {
-        var itemStatCost = Core.MetaData.ItemStatCostData;
         var attributes = new Attributes
         {
             Header = reader.ReadUInt16()
@@ -18,14 +17,14 @@ public class Attributes
         ushort id = reader.ReadUInt16(9);
         while (id != 0x1ff)
         {
-            var property = itemStatCost.GetById(id);
-            int attribute = reader.ReadInt32(property?["CSvBits"].ToInt32() ?? 0);
-            int valShift = property?["ValShift"].ToInt32() ?? 0;
+            var property = Core.SqlContext.GetById(id);
+            int attribute = reader.ReadInt32(Convert.ToInt32(property.CsvBits ?? 0));
+            int valShift = Convert.ToInt32(Convert.ToInt32(property.ValShift ?? 0));
             if (valShift > 0)
             {
                 attribute >>= valShift;
             }
-            attributes.Stats.Add(property?["Stat"].Value ?? string.Empty, attribute);
+            attributes.Stats.Add(property.Stat ?? string.Empty, attribute);
             id = reader.ReadUInt16(9);
         }
         reader.Align();
@@ -34,19 +33,18 @@ public class Attributes
 
     public void Write(IBitWriter writer)
     {
-        var itemStatCost = Core.MetaData.ItemStatCostData;
         writer.WriteUInt16(Header ?? 0x6667);
         foreach (var entry in Stats)
         {
-            var property = itemStatCost.GetByStat(entry.Key);
-            writer.WriteUInt16(property?["ID"].ToUInt16() ?? 0, 9);
+            var property = Core.SqlContext.GetByStat(entry.Key);
+            writer.WriteUInt16((ushort)(property.Id ?? 0), 9);
             int attribute = entry.Value;
-            int valShift = property?["ValShift"].ToInt32() ?? 0;
+            int valShift = Convert.ToInt32(property.ValShift ?? 0);
             if (valShift > 0)
             {
                 attribute <<= valShift;
             }
-            writer.WriteInt32(attribute, property?["CSvBits"].ToInt32() ?? 0);
+            writer.WriteInt32(attribute, Convert.ToInt32(property.CsvBits ?? 0));
         }
         writer.WriteUInt16(0x1ff, 9);
         writer.Align();

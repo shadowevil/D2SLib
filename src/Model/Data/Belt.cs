@@ -105,49 +105,49 @@ public partial class Belt
 
     public long? Box12bottom { get; set; }
 
-    public string? Box13left { get; set; }
+    public long? Box13left { get; set; }
 
-    public string? Box13right { get; set; }
+    public long? Box13right { get; set; }
 
-    public string? Box13top { get; set; }
+    public long? Box13top { get; set; }
 
-    public string? Box13bottom { get; set; }
+    public long? Box13bottom { get; set; }
 
-    public string? Box14left { get; set; }
+    public long? Box14left { get; set; }
 
-    public string? Box14right { get; set; }
+    public long? Box14right { get; set; }
 
-    public string? Box14top { get; set; }
+    public long? Box14top { get; set; }
 
-    public string? Box14bottom { get; set; }
+    public long? Box14bottom { get; set; }
 
-    public string? Box15left { get; set; }
+    public long? Box15left { get; set; }
 
-    public string? Box15right { get; set; }
+    public long? Box15right { get; set; }
 
-    public string? Box15top { get; set; }
+    public long? Box15top { get; set; }
 
-    public string? Box15bottom { get; set; }
+    public long? Box15bottom { get; set; }
 
-    public string? Box16left { get; set; }
+    public long? Box16left { get; set; }
 
-    public string? Box16right { get; set; }
+    public long? Box16right { get; set; }
 
-    public string? Box16top { get; set; }
+    public long? Box16top { get; set; }
 
-    public string? Box16bottom { get; set; }
+    public long? Box16bottom { get; set; }
 
     public string? DefaultItemTypeCol1 { get; set; }
 
-    public string? DefaultItemCodeCol1 { get; set; }
+    public long? DefaultItemCodeCol1 { get; set; }
 
     public string? DefaultItemTypeCol2 { get; set; }
 
-    public string? DefaultItemCodeCol2 { get; set; }
+    public long? DefaultItemCodeCol2 { get; set; }
 
     public string? DefaultItemTypeCol3 { get; set; }
 
-    public string? DefaultItemCodeCol3 { get; set; }
+    public long? DefaultItemCodeCol3 { get; set; }
 
     public string? DefaultItemTypeCol4 { get; set; }
 

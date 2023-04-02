@@ -29,7 +29,7 @@ public partial class Superunique
 
     public string? Stacks { get; set; }
 
-    public string? Replaceable { get; set; }
+    public long? Replaceable { get; set; }
 
     public long? Utrans { get; set; }
 

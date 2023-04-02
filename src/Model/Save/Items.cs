@@ -280,7 +280,7 @@ public sealed class Item : IDisposable
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    item.Code += Core.MetaData.ItemsData.ItemCodeTree.DecodeChar(reader);
+                    item.Code += Core.SqlContext.ItemCodeTree.DecodeChar(reader);
                 }
             }
             item.NumberOfSocketedItems = reader.ReadByte(item.IsCompact ? 1 : 3);
@@ -336,7 +336,7 @@ public sealed class Item : IDisposable
             }
             else if (version >= 0x61)
             {
-                var codeTree = Core.MetaData.ItemsData.ItemCodeTree;
+                var codeTree = Core.SqlContext.ItemCodeTree;
                 for (int i = 0; i < 4; i++)
                 {
                     using var bits = codeTree.EncodeChar((char)code[i]);
@@ -419,26 +419,26 @@ public sealed class Item : IDisposable
             //reader.ReadBits(96);
             reader.AdvanceBits(96);
         }
-        var itemStatCost = Core.MetaData.ItemStatCostData;
-        var row = Core.MetaData.ItemsData.GetByCode(item.Code);
-        bool isArmor = Core.MetaData.ItemsData.IsArmor(item.Code);
-        bool isWeapon = Core.MetaData.ItemsData.IsWeapon(item.Code);
-        bool isStackable = row?["stackable"].ToBool() ?? false;
+        bool isArmor = Core.SqlContext.IsArmor(item.Code);
+        bool isWeapon = Core.SqlContext.IsWeapon(item.Code);
+        bool isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Armor>(item.Code)?.Stackable);
         if (isArmor)
         {
-            item.Armor = (ushort)(reader.ReadUInt16(11) + itemStatCost.GetByStat("armorclass")?["Save Add"].ToUInt16() ?? 0);
+            item.Armor = (ushort)(reader.ReadUInt16(11) + Convert.ToUInt32(Core.SqlContext.GetByStat("armorclass").SaveAdd ?? "0"));
+            isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Armor>(item.Code)?.Stackable);
         }
         if (isArmor || isWeapon)
         {
-            var maxDurabilityStat = itemStatCost.GetByStat("maxdurability");
-            var durabilityStat = itemStatCost.GetByStat("maxdurability");
-            item.MaxDurability = (ushort)(reader.ReadUInt16(maxDurabilityStat?["Save Bits"].ToInt32() ?? 0) + maxDurabilityStat?["Save Add"].ToUInt16() ?? 0);
+            var maxDurabilityStat = Core.SqlContext.GetByStat("maxdurability");
+            var durabilityStat = Core.SqlContext.GetByStat("maxdurability");
+            item.MaxDurability = (ushort)(reader.ReadUInt16(Convert.ToUInt16(maxDurabilityStat.SaveBits ?? 0)) + Convert.ToUInt16(maxDurabilityStat.SaveAdd ?? "0"));
             if (item.MaxDurability > 0)
             {
-                item.Durability = (ushort)(reader.ReadUInt16(durabilityStat?["Save Bits"].ToInt32() ?? 0) + durabilityStat?["Save Add"].ToUInt16() ?? 0);
+                item.Durability = (ushort)(reader.ReadUInt16(Convert.ToUInt16(durabilityStat.SaveBits ?? 0)) + Convert.ToUInt16(durabilityStat.SaveAdd ?? "0"));
                 //what is this?
                 reader.ReadBit();
             }
+            isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Weapon>(item.Code)?.Stackable);
         }
         if (isStackable)
         {
@@ -537,23 +537,22 @@ public sealed class Item : IDisposable
         {
             //todo 96 bits
         }
-        var itemStatCost = Core.MetaData.ItemStatCostData;
-        var row = Core.MetaData.ItemsData.GetByCode(item.Code);
-        bool isArmor = Core.MetaData.ItemsData.IsArmor(item.Code);
-        bool isWeapon = Core.MetaData.ItemsData.IsWeapon(item.Code);
-        bool isStackable = row?["stackable"].ToBool() ?? false;
+        bool isArmor = Core.SqlContext.IsArmor(item.Code);
+        bool isWeapon = Core.SqlContext.IsWeapon(item.Code);
+        bool isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Misc>(item.Code)?.Stackable);
         if (isArmor)
         {
-            writer.WriteUInt16((ushort)(item.Armor - itemStatCost.GetByStat("armorclass")?["Save Add"].ToUInt16() ?? 0), 11);
+            writer.WriteUInt16((ushort)(item.Armor - Convert.ToUInt32(Core.SqlContext.GetByStat("armorclass").SaveAdd ?? "0")), 11);
+            isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Armor>(item.Code)?.Stackable);
         }
         if (isArmor || isWeapon)
         {
-            var maxDurabilityStat = itemStatCost.GetByStat("maxdurability");
-            var durabilityStat = itemStatCost.GetByStat("maxdurability");
-            writer.WriteUInt16((ushort)(item.MaxDurability - maxDurabilityStat?["Save Add"].ToUInt16() ?? 0), maxDurabilityStat?["Save Bits"].ToInt32() ?? 0);
+            var maxDurabilityStat = Core.SqlContext.GetByStat("maxdurability");
+            var durabilityStat = Core.SqlContext.GetByStat("maxdurability");
+            writer.WriteUInt16((ushort)(item.MaxDurability - Convert.ToUInt32(maxDurabilityStat.SaveAdd ?? "0")), Convert.ToInt32(maxDurabilityStat.SaveBits ?? 0));
             if (item.MaxDurability > 0)
             {
-                writer.WriteUInt16((ushort)(item.Durability - durabilityStat?["Save Add"].ToUInt16() ?? 0), durabilityStat?["Save Bits"].ToInt32() ?? 0);
+                writer.WriteUInt16((ushort)(item.MaxDurability - Convert.ToUInt32(durabilityStat.SaveAdd ?? "0")), Convert.ToInt32(durabilityStat.SaveBits ?? 0));
                 ////what is this?
                 writer.WriteBit(false);
             }
@@ -632,7 +631,7 @@ public class ItemStatList
         {
             var stat = itemStatList.Stats[i];
             var property = ItemStat.GetStatRow(stat);
-            ushort id = property?["ID"].ToUInt16() ?? 0;
+            ushort id = Convert.ToUInt16(property.Id ?? 0);
             writer.WriteUInt16(id, 9);
             ItemStat.Write(writer, stat);
 
@@ -667,20 +666,20 @@ public class ItemStat
     public static ItemStat Read(IBitReader reader, ushort id)
     {
         var itemStat = new ItemStat();
-        var property = Core.MetaData.ItemStatCostData.GetById(id);
+        var property = Core.SqlContext.GetById(id);
         if (property == null)
         {
             throw new Exception($"No ItemStatCost record found for id: {id} at bit {reader.Position - 9}");
         }
         itemStat.Id = id;
-        itemStat.Stat = property["Stat"].Value;
-        int saveParamBitCount = property["Save Param Bits"].ToInt32();
-        int encode = property["Encode"].ToInt32();
+        itemStat.Stat = property.Stat ?? "";
+        int saveParamBitCount = Convert.ToInt32(property.SaveParamBits);
+        int encode = Convert.ToInt32(property.Encode);
         if (saveParamBitCount != 0)
         {
             int saveParam = reader.ReadInt32(saveParamBitCount);
             //todo is there a better way to identify skill tab stats.
-            switch (property["descfunc"].ToInt32())
+            switch (property.Descfunc)
             {
                 case 14: //+[value] to [skilltab] Skill Levels ([class] Only) : stat id 188
                     itemStat.SkillTab = saveParam & 0x7;
@@ -703,8 +702,8 @@ public class ItemStat
                     break;
             }
         }
-        int saveBits = reader.ReadInt32(property["Save Bits"].ToInt32());
-        saveBits -= property["Save Add"].ToInt32();
+        int saveBits = reader.ReadInt32((int)(property.SaveBits ?? 0));
+        saveBits -= Convert.ToInt32(property.SaveAdd);
         switch (encode)
         {
             case 3: //skill charges
@@ -725,8 +724,8 @@ public class ItemStat
         {
             throw new ArgumentException($"No ItemStatCost record found for id: {stat.Id}", nameof(stat));
         }
-        int saveParamBitCount = property["Save Param Bits"].ToInt32();
-        int encode = property["Encode"].ToInt32();
+        int saveParamBitCount = Convert.ToInt32(property.SaveParamBits);
+        int encode = Convert.ToInt32(property.SaveParamBits ?? 0);
         if (saveParamBitCount != 0)
         {
             if (stat.Param != null)
@@ -736,7 +735,7 @@ public class ItemStat
             else
             {
                 int saveParamBits = 0;
-                switch (property["descfunc"].ToInt32())
+                switch (property.Descfunc)
                 {
                     case 14: //+[value] to [skilltab] Skill Levels ([class] Only) : stat id 188
                         saveParamBits |= (stat.SkillTab ?? 0 & 0x7);
@@ -766,7 +765,7 @@ public class ItemStat
             }
         }
         int saveBits = stat.Value;
-        saveBits += property["Save Add"].ToInt32();
+        saveBits += Convert.ToInt32(property.SaveAdd);
         switch (encode)
         {
             case 3: //skill charges
@@ -776,13 +775,13 @@ public class ItemStat
             default:
                 break;
         }
-        writer.WriteInt32(saveBits, property["Save Bits"].ToInt32());
+        writer.WriteInt32(saveBits, (int)(property.SaveBits ?? 0));
     }
 
-    public static DataRow? GetStatRow(ItemStat stat)
+    public static Itemstatcost GetStatRow(ItemStat stat)
     {
         return stat.Id is ushort statId
-            ? Core.MetaData.ItemStatCostData.GetById(statId)
-            : Core.MetaData.ItemStatCostData.GetByStat(stat.Stat);
+            ? Core.SqlContext.GetById(statId)
+            : Core.SqlContext.GetByStat(stat.Stat);
     }
 }

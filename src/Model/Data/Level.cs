@@ -15,9 +15,9 @@ public partial class Level
 
     public long? Act { get; set; }
 
-    public string? QuestFlag { get; set; }
+    public long? QuestFlag { get; set; }
 
-    public string? QuestFlagEx { get; set; }
+    public long? QuestFlagEx { get; set; }
 
     public long? Layer { get; set; }
 
@@ -171,41 +171,41 @@ public partial class Level
 
     public string? Mon8 { get; set; }
 
-    public string? Mon9 { get; set; }
+    public long? Mon9 { get; set; }
 
-    public string? Mon10 { get; set; }
+    public long? Mon10 { get; set; }
 
-    public string? Mon11 { get; set; }
+    public long? Mon11 { get; set; }
 
-    public string? Mon12 { get; set; }
+    public long? Mon12 { get; set; }
 
-    public string? Mon13 { get; set; }
+    public long? Mon13 { get; set; }
 
-    public string? Mon14 { get; set; }
+    public long? Mon14 { get; set; }
 
-    public string? Mon15 { get; set; }
+    public long? Mon15 { get; set; }
 
-    public string? Mon16 { get; set; }
+    public long? Mon16 { get; set; }
 
-    public string? Mon17 { get; set; }
+    public long? Mon17 { get; set; }
 
-    public string? Mon18 { get; set; }
+    public long? Mon18 { get; set; }
 
-    public string? Mon19 { get; set; }
+    public long? Mon19 { get; set; }
 
-    public string? Mon20 { get; set; }
+    public long? Mon20 { get; set; }
 
-    public string? Mon21 { get; set; }
+    public long? Mon21 { get; set; }
 
-    public string? Mon22 { get; set; }
+    public long? Mon22 { get; set; }
 
-    public string? Mon23 { get; set; }
+    public long? Mon23 { get; set; }
 
-    public string? Mon24 { get; set; }
+    public long? Mon24 { get; set; }
 
-    public string? Mon25 { get; set; }
+    public long? Mon25 { get; set; }
 
-    public string? Rangedspawn { get; set; }
+    public long? Rangedspawn { get; set; }
 
     public string? Nmon1 { get; set; }
 
@@ -227,35 +227,35 @@ public partial class Level
 
     public string? Nmon10 { get; set; }
 
-    public string? Nmon11 { get; set; }
+    public long? Nmon11 { get; set; }
 
-    public string? Nmon12 { get; set; }
+    public long? Nmon12 { get; set; }
 
-    public string? Nmon13 { get; set; }
+    public long? Nmon13 { get; set; }
 
-    public string? Nmon14 { get; set; }
+    public long? Nmon14 { get; set; }
 
-    public string? Nmon15 { get; set; }
+    public long? Nmon15 { get; set; }
 
-    public string? Nmon16 { get; set; }
+    public long? Nmon16 { get; set; }
 
-    public string? Nmon17 { get; set; }
+    public long? Nmon17 { get; set; }
 
-    public string? Nmon18 { get; set; }
+    public long? Nmon18 { get; set; }
 
-    public string? Nmon19 { get; set; }
+    public long? Nmon19 { get; set; }
 
-    public string? Nmon20 { get; set; }
+    public long? Nmon20 { get; set; }
 
-    public string? Nmon21 { get; set; }
+    public long? Nmon21 { get; set; }
 
-    public string? Nmon22 { get; set; }
+    public long? Nmon22 { get; set; }
 
-    public string? Nmon23 { get; set; }
+    public long? Nmon23 { get; set; }
 
-    public string? Nmon24 { get; set; }
+    public long? Nmon24 { get; set; }
 
-    public string? Nmon25 { get; set; }
+    public long? Nmon25 { get; set; }
 
     public string? Umon1 { get; set; }
 
@@ -273,39 +273,39 @@ public partial class Level
 
     public string? Umon8 { get; set; }
 
-    public string? Umon9 { get; set; }
+    public long? Umon9 { get; set; }
 
-    public string? Umon10 { get; set; }
+    public long? Umon10 { get; set; }
 
-    public string? Umon11 { get; set; }
+    public long? Umon11 { get; set; }
 
-    public string? Umon12 { get; set; }
+    public long? Umon12 { get; set; }
 
-    public string? Umon13 { get; set; }
+    public long? Umon13 { get; set; }
 
-    public string? Umon14 { get; set; }
+    public long? Umon14 { get; set; }
 
-    public string? Umon15 { get; set; }
+    public long? Umon15 { get; set; }
 
-    public string? Umon16 { get; set; }
+    public long? Umon16 { get; set; }
 
-    public string? Umon17 { get; set; }
+    public long? Umon17 { get; set; }
 
-    public string? Umon18 { get; set; }
+    public long? Umon18 { get; set; }
 
-    public string? Umon19 { get; set; }
+    public long? Umon19 { get; set; }
 
-    public string? Umon20 { get; set; }
+    public long? Umon20 { get; set; }
 
-    public string? Umon21 { get; set; }
+    public long? Umon21 { get; set; }
 
-    public string? Umon22 { get; set; }
+    public long? Umon22 { get; set; }
 
-    public string? Umon23 { get; set; }
+    public long? Umon23 { get; set; }
 
-    public string? Umon24 { get; set; }
+    public long? Umon24 { get; set; }
 
-    public string? Umon25 { get; set; }
+    public long? Umon25 { get; set; }
 
     public string? Cmon1 { get; set; }
 
@@ -317,19 +317,19 @@ public partial class Level
 
     public long? Cpct1 { get; set; }
 
-    public string? Cpct2 { get; set; }
+    public long? Cpct2 { get; set; }
 
-    public string? Cpct3 { get; set; }
+    public long? Cpct3 { get; set; }
 
-    public string? Cpct4 { get; set; }
+    public long? Cpct4 { get; set; }
 
-    public string? Camt1 { get; set; }
+    public long? Camt1 { get; set; }
 
-    public string? Camt2 { get; set; }
+    public long? Camt2 { get; set; }
 
-    public string? Camt3 { get; set; }
+    public long? Camt3 { get; set; }
 
-    public string? Camt4 { get; set; }
+    public long? Camt4 { get; set; }
 
     public string? Themes { get; set; }
 

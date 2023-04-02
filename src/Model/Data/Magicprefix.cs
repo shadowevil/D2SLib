@@ -15,15 +15,15 @@ public partial class Magicprefix
 
     public long? Level { get; set; }
 
-    public string? Maxlevel { get; set; }
+    public long? Maxlevel { get; set; }
 
     public long? Levelreq { get; set; }
 
     public string? Classspecific { get; set; }
 
-    public string? Class { get; set; }
+    public long? Class { get; set; }
 
-    public string? Classlevelreq { get; set; }
+    public long? Classlevelreq { get; set; }
 
     public long? Frequency { get; set; }
 
@@ -31,7 +31,7 @@ public partial class Magicprefix
 
     public string? Mod1code { get; set; }
 
-    public string? Mod1param { get; set; }
+    public long? Mod1param { get; set; }
 
     public long? Mod1min { get; set; }
 
@@ -41,17 +41,17 @@ public partial class Magicprefix
 
     public string? Mod2param { get; set; }
 
-    public string? Mod2min { get; set; }
+    public long? Mod2min { get; set; }
 
-    public string? Mod2max { get; set; }
+    public long? Mod2max { get; set; }
 
     public string? Mod3code { get; set; }
 
-    public string? Mod3param { get; set; }
+    public long? Mod3param { get; set; }
 
-    public string? Mod3min { get; set; }
+    public long? Mod3min { get; set; }
 
-    public string? Mod3max { get; set; }
+    public long? Mod3max { get; set; }
 
     public string? Transformcolor { get; set; }
 

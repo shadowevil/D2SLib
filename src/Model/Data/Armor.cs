@@ -45,9 +45,9 @@ public partial class Armor
 
     public string? Namestr { get; set; }
 
-    public string? MagicLvl { get; set; }
+    public long? MagicLvl { get; set; }
 
-    public string? AutoPrefix { get; set; }
+    public long? AutoPrefix { get; set; }
 
     public string? Alternategfx { get; set; }
 
@@ -77,39 +77,39 @@ public partial class Armor
 
     public string? Setinvfile { get; set; }
 
-    public string? RArm { get; set; }
+    public long? RArm { get; set; }
 
-    public string? LArm { get; set; }
+    public long? LArm { get; set; }
 
-    public string? Torso { get; set; }
+    public long? Torso { get; set; }
 
-    public string? Legs { get; set; }
+    public long? Legs { get; set; }
 
-    public string? RSpad { get; set; }
+    public long? RSpad { get; set; }
 
-    public string? LSpad { get; set; }
+    public long? LSpad { get; set; }
 
     public string? Useable { get; set; }
 
-    public string? Stackable { get; set; }
+    public long? Stackable { get; set; }
 
-    public string? Minstack { get; set; }
+    public long? Minstack { get; set; }
 
-    public string? Maxstack { get; set; }
+    public long? Maxstack { get; set; }
 
-    public string? Spawnstack { get; set; }
+    public long? Spawnstack { get; set; }
 
     public string? Transmogrify { get; set; }
 
     public string? TmogType { get; set; }
 
-    public string? TmogMin { get; set; }
+    public long? TmogMin { get; set; }
 
-    public string? TmogMax { get; set; }
+    public long? TmogMax { get; set; }
 
     public string? Type { get; set; }
 
-    public string? Type2 { get; set; }
+    public long? Type2 { get; set; }
 
     public string? Dropsound { get; set; }
 
@@ -129,9 +129,9 @@ public partial class Armor
 
     public string? Belt { get; set; }
 
-    public string? Quest { get; set; }
+    public long? Quest { get; set; }
 
-    public string? Questdiffcheck { get; set; }
+    public long? Questdiffcheck { get; set; }
 
     public string? Missiletype { get; set; }
 
@@ -143,181 +143,181 @@ public partial class Armor
 
     public string? Maxdam { get; set; }
 
-    public string? StrBonus { get; set; }
+    public long? StrBonus { get; set; }
 
-    public string? DexBonus { get; set; }
+    public long? DexBonus { get; set; }
 
     public string? Gemoffset { get; set; }
 
     public long? Bitfield1 { get; set; }
 
-    public string? CharsiMin { get; set; }
+    public long? CharsiMin { get; set; }
 
-    public string? CharsiMax { get; set; }
+    public long? CharsiMax { get; set; }
 
-    public string? CharsiMagicMin { get; set; }
+    public long? CharsiMagicMin { get; set; }
 
-    public string? CharsiMagicMax { get; set; }
+    public long? CharsiMagicMax { get; set; }
 
     public long? CharsiMagicLvl { get; set; }
 
-    public string? GheedMin { get; set; }
+    public long? GheedMin { get; set; }
 
-    public string? GheedMax { get; set; }
+    public long? GheedMax { get; set; }
 
-    public string? GheedMagicMin { get; set; }
+    public long? GheedMagicMin { get; set; }
 
-    public string? GheedMagicMax { get; set; }
+    public long? GheedMagicMax { get; set; }
 
     public long? GheedMagicLvl { get; set; }
 
-    public string? AkaraMin { get; set; }
+    public long? AkaraMin { get; set; }
 
-    public string? AkaraMax { get; set; }
+    public long? AkaraMax { get; set; }
 
-    public string? AkaraMagicMin { get; set; }
+    public long? AkaraMagicMin { get; set; }
 
-    public string? AkaraMagicMax { get; set; }
+    public long? AkaraMagicMax { get; set; }
 
     public long? AkaraMagicLvl { get; set; }
 
-    public string? FaraMin { get; set; }
+    public long? FaraMin { get; set; }
 
-    public string? FaraMax { get; set; }
+    public long? FaraMax { get; set; }
 
-    public string? FaraMagicMin { get; set; }
+    public long? FaraMagicMin { get; set; }
 
-    public string? FaraMagicMax { get; set; }
+    public long? FaraMagicMax { get; set; }
 
     public long? FaraMagicLvl { get; set; }
 
-    public string? LysanderMin { get; set; }
+    public long? LysanderMin { get; set; }
 
-    public string? LysanderMax { get; set; }
+    public long? LysanderMax { get; set; }
 
-    public string? LysanderMagicMin { get; set; }
+    public long? LysanderMagicMin { get; set; }
 
-    public string? LysanderMagicMax { get; set; }
+    public long? LysanderMagicMax { get; set; }
 
     public long? LysanderMagicLvl { get; set; }
 
-    public string? DrognanMin { get; set; }
+    public long? DrognanMin { get; set; }
 
-    public string? DrognanMax { get; set; }
+    public long? DrognanMax { get; set; }
 
-    public string? DrognanMagicMin { get; set; }
+    public long? DrognanMagicMin { get; set; }
 
-    public string? DrognanMagicMax { get; set; }
+    public long? DrognanMagicMax { get; set; }
 
     public long? DrognanMagicLvl { get; set; }
 
-    public string? HratliMin { get; set; }
+    public long? HratliMin { get; set; }
 
-    public string? HratliMax { get; set; }
+    public long? HratliMax { get; set; }
 
-    public string? HratliMagicMin { get; set; }
+    public long? HratliMagicMin { get; set; }
 
-    public string? HratliMagicMax { get; set; }
+    public long? HratliMagicMax { get; set; }
 
     public long? HratliMagicLvl { get; set; }
 
-    public string? AlkorMin { get; set; }
+    public long? AlkorMin { get; set; }
 
-    public string? AlkorMax { get; set; }
+    public long? AlkorMax { get; set; }
 
-    public string? AlkorMagicMin { get; set; }
+    public long? AlkorMagicMin { get; set; }
 
-    public string? AlkorMagicMax { get; set; }
+    public long? AlkorMagicMax { get; set; }
 
     public long? AlkorMagicLvl { get; set; }
 
-    public string? OrmusMin { get; set; }
+    public long? OrmusMin { get; set; }
 
-    public string? OrmusMax { get; set; }
+    public long? OrmusMax { get; set; }
 
-    public string? OrmusMagicMin { get; set; }
+    public long? OrmusMagicMin { get; set; }
 
-    public string? OrmusMagicMax { get; set; }
+    public long? OrmusMagicMax { get; set; }
 
     public long? OrmusMagicLvl { get; set; }
 
-    public string? ElzixMin { get; set; }
+    public long? ElzixMin { get; set; }
 
-    public string? ElzixMax { get; set; }
+    public long? ElzixMax { get; set; }
 
-    public string? ElzixMagicMin { get; set; }
+    public long? ElzixMagicMin { get; set; }
 
-    public string? ElzixMagicMax { get; set; }
+    public long? ElzixMagicMax { get; set; }
 
     public long? ElzixMagicLvl { get; set; }
 
-    public string? AshearaMin { get; set; }
+    public long? AshearaMin { get; set; }
 
-    public string? AshearaMax { get; set; }
+    public long? AshearaMax { get; set; }
 
-    public string? AshearaMagicMin { get; set; }
+    public long? AshearaMagicMin { get; set; }
 
-    public string? AshearaMagicMax { get; set; }
+    public long? AshearaMagicMax { get; set; }
 
     public long? AshearaMagicLvl { get; set; }
 
-    public string? CainMin { get; set; }
+    public long? CainMin { get; set; }
 
-    public string? CainMax { get; set; }
+    public long? CainMax { get; set; }
 
-    public string? CainMagicMin { get; set; }
+    public long? CainMagicMin { get; set; }
 
-    public string? CainMagicMax { get; set; }
+    public long? CainMagicMax { get; set; }
 
     public long? CainMagicLvl { get; set; }
 
-    public string? HalbuMin { get; set; }
+    public long? HalbuMin { get; set; }
 
-    public string? HalbuMax { get; set; }
+    public long? HalbuMax { get; set; }
 
-    public string? HalbuMagicMin { get; set; }
+    public long? HalbuMagicMin { get; set; }
 
-    public string? HalbuMagicMax { get; set; }
+    public long? HalbuMagicMax { get; set; }
 
     public long? HalbuMagicLvl { get; set; }
 
-    public string? JamellaMin { get; set; }
+    public long? JamellaMin { get; set; }
 
-    public string? JamellaMax { get; set; }
+    public long? JamellaMax { get; set; }
 
-    public string? JamellaMagicMin { get; set; }
+    public long? JamellaMagicMin { get; set; }
 
-    public string? JamellaMagicMax { get; set; }
+    public long? JamellaMagicMax { get; set; }
 
     public long? JamellaMagicLvl { get; set; }
 
-    public string? LarzukMin { get; set; }
+    public long? LarzukMin { get; set; }
 
-    public string? LarzukMax { get; set; }
+    public long? LarzukMax { get; set; }
 
-    public string? LarzukMagicMin { get; set; }
+    public long? LarzukMagicMin { get; set; }
 
-    public string? LarzukMagicMax { get; set; }
+    public long? LarzukMagicMax { get; set; }
 
     public long? LarzukMagicLvl { get; set; }
 
-    public string? MalahMin { get; set; }
+    public long? MalahMin { get; set; }
 
-    public string? MalahMax { get; set; }
+    public long? MalahMax { get; set; }
 
-    public string? MalahMagicMin { get; set; }
+    public long? MalahMagicMin { get; set; }
 
-    public string? MalahMagicMax { get; set; }
+    public long? MalahMagicMax { get; set; }
 
     public long? MalahMagicLvl { get; set; }
 
-    public string? AnyaMin { get; set; }
+    public long? AnyaMin { get; set; }
 
-    public string? AnyaMax { get; set; }
+    public long? AnyaMax { get; set; }
 
-    public string? AnyaMagicMin { get; set; }
+    public long? AnyaMagicMin { get; set; }
 
-    public string? AnyaMagicMax { get; set; }
+    public long? AnyaMagicMax { get; set; }
 
     public long? AnyaMagicLvl { get; set; }
 
@@ -335,5 +335,5 @@ public partial class Armor
 
     public string? PermStoreItem { get; set; }
 
-    public string? Diablocloneweight { get; set; }
+    public long? Diablocloneweight { get; set; }
 }

@@ -13,13 +13,13 @@ public partial class Treasureclassex
 
     public long? Picks { get; set; }
 
-    public string? Unique { get; set; }
+    public long? Unique { get; set; }
 
-    public string? Set { get; set; }
+    public long? Set { get; set; }
 
-    public string? Rare { get; set; }
+    public long? Rare { get; set; }
 
-    public string? Magic { get; set; }
+    public long? Magic { get; set; }
 
     public string? NoDrop { get; set; }
 
@@ -37,43 +37,43 @@ public partial class Treasureclassex
 
     public string? Item4 { get; set; }
 
-    public string? Prob4 { get; set; }
+    public long? Prob4 { get; set; }
 
     public string? Item5 { get; set; }
 
-    public string? Prob5 { get; set; }
+    public long? Prob5 { get; set; }
 
     public string? Item6 { get; set; }
 
-    public string? Prob6 { get; set; }
+    public long? Prob6 { get; set; }
 
     public string? Item7 { get; set; }
 
-    public string? Prob7 { get; set; }
+    public long? Prob7 { get; set; }
 
     public string? Item8 { get; set; }
 
-    public string? Prob8 { get; set; }
+    public long? Prob8 { get; set; }
 
     public string? Item9 { get; set; }
 
-    public string? Prob9 { get; set; }
+    public long? Prob9 { get; set; }
 
-    public string? Item10 { get; set; }
+    public long? Item10 { get; set; }
 
-    public string? Prob10 { get; set; }
+    public long? Prob10 { get; set; }
 
-    public string? ItemProbSum { get; set; }
+    public long? ItemProbSum { get; set; }
 
-    public string? ItemProbTotal { get; set; }
+    public long? ItemProbTotal { get; set; }
 
-    public string? TreasureClassDropChance { get; set; }
+    public double? TreasureClassDropChance { get; set; }
 
-    public string? FirstLadderSeason { get; set; }
+    public long? FirstLadderSeason { get; set; }
 
-    public string? LastLadderSeason { get; set; }
+    public long? LastLadderSeason { get; set; }
 
-    public string? NoAlwaysSpawn { get; set; }
+    public long? NoAlwaysSpawn { get; set; }
 
     public string? Eol { get; set; }
 }

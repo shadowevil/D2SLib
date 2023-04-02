@@ -103,51 +103,51 @@ public partial class Hireling
 
     public string? Skill3 { get; set; }
 
-    public string? Mode3 { get; set; }
+    public long? Mode3 { get; set; }
 
-    public string? Chance3 { get; set; }
+    public long? Chance3 { get; set; }
 
     public string? ChancePerLvl3 { get; set; }
 
-    public string? Level3 { get; set; }
+    public long? Level3 { get; set; }
 
-    public string? LvlPerLvl3 { get; set; }
+    public long? LvlPerLvl3 { get; set; }
 
-    public string? Skill4 { get; set; }
+    public long? Skill4 { get; set; }
 
-    public string? Mode4 { get; set; }
+    public long? Mode4 { get; set; }
 
-    public string? Chance4 { get; set; }
+    public long? Chance4 { get; set; }
 
-    public string? ChancePerLvl4 { get; set; }
+    public long? ChancePerLvl4 { get; set; }
 
-    public string? Level4 { get; set; }
+    public long? Level4 { get; set; }
 
-    public string? LvlPerLvl4 { get; set; }
+    public long? LvlPerLvl4 { get; set; }
 
-    public string? Skill5 { get; set; }
+    public long? Skill5 { get; set; }
 
-    public string? Mode5 { get; set; }
+    public long? Mode5 { get; set; }
 
-    public string? Chance5 { get; set; }
+    public long? Chance5 { get; set; }
 
-    public string? ChancePerLvl5 { get; set; }
+    public long? ChancePerLvl5 { get; set; }
 
-    public string? Level5 { get; set; }
+    public long? Level5 { get; set; }
 
-    public string? LvlPerLvl5 { get; set; }
+    public long? LvlPerLvl5 { get; set; }
 
-    public string? Skill6 { get; set; }
+    public long? Skill6 { get; set; }
 
-    public string? Mode6 { get; set; }
+    public long? Mode6 { get; set; }
 
-    public string? Chance6 { get; set; }
+    public long? Chance6 { get; set; }
 
-    public string? ChancePerLvl6 { get; set; }
+    public long? ChancePerLvl6 { get; set; }
 
-    public string? Level6 { get; set; }
+    public long? Level6 { get; set; }
 
-    public string? LvlPerLvl6 { get; set; }
+    public long? LvlPerLvl6 { get; set; }
 
     public long? HiringMaxLevelDifference { get; set; }
 

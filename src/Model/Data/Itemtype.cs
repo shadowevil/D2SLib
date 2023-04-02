@@ -33,7 +33,7 @@ public partial class Itemtype
 
     public string? AutoStack { get; set; }
 
-    public string? Magic { get; set; }
+    public long? Magic { get; set; }
 
     public long? Rare { get; set; }
 

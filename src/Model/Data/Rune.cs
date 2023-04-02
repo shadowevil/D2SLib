@@ -11,11 +11,11 @@ public partial class Rune
 
     public long? Complete { get; set; }
 
-    public string? FirstLadderSeason { get; set; }
+    public long? FirstLadderSeason { get; set; }
 
-    public string? LastLadderSeason { get; set; }
+    public long? LastLadderSeason { get; set; }
 
-    public string? PatchRelease { get; set; }
+    public long? PatchRelease { get; set; }
 
     public string? Itype1 { get; set; }
 
@@ -23,17 +23,17 @@ public partial class Rune
 
     public string? Itype3 { get; set; }
 
-    public string? Itype4 { get; set; }
+    public long? Itype4 { get; set; }
 
-    public string? Itype5 { get; set; }
+    public long? Itype5 { get; set; }
 
-    public string? Itype6 { get; set; }
+    public long? Itype6 { get; set; }
 
-    public string? Etype1 { get; set; }
+    public long? Etype1 { get; set; }
 
-    public string? Etype2 { get; set; }
+    public long? Etype2 { get; set; }
 
-    public string? Etype3 { get; set; }
+    public long? Etype3 { get; set; }
 
     public string? RunesUsed { get; set; }
 
@@ -85,25 +85,25 @@ public partial class Rune
 
     public string? T1param5 { get; set; }
 
-    public string? T1min5 { get; set; }
+    public long? T1min5 { get; set; }
 
-    public string? T1max5 { get; set; }
+    public long? T1max5 { get; set; }
 
     public string? T1code6 { get; set; }
 
     public string? T1param6 { get; set; }
 
-    public string? T1min6 { get; set; }
+    public long? T1min6 { get; set; }
 
-    public string? T1max6 { get; set; }
+    public long? T1max6 { get; set; }
 
     public string? T1code7 { get; set; }
 
     public string? T1param7 { get; set; }
 
-    public string? T1min7 { get; set; }
+    public long? T1min7 { get; set; }
 
-    public string? T1max7 { get; set; }
+    public long? T1max7 { get; set; }
 
     public string? Eol { get; set; }
 }

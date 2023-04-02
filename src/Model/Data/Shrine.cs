@@ -15,9 +15,9 @@ public partial class Shrine
 
     public long? Arg0 { get; set; }
 
-    public string? Arg1 { get; set; }
+    public long? Arg1 { get; set; }
 
-    public string? DurationInFrames { get; set; }
+    public long? DurationInFrames { get; set; }
 
     public long? ResetTimeInMinutes { get; set; }
 

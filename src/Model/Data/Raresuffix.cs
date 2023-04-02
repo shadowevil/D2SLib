@@ -21,13 +21,13 @@ public partial class Raresuffix
 
     public string? Itype6 { get; set; }
 
-    public string? Itype7 { get; set; }
+    public long? Itype7 { get; set; }
 
-    public string? Etype1 { get; set; }
+    public long? Etype1 { get; set; }
 
-    public string? Etype2 { get; set; }
+    public long? Etype2 { get; set; }
 
-    public string? Etype3 { get; set; }
+    public long? Etype3 { get; set; }
 
-    public string? Etype4 { get; set; }
+    public long? Etype4 { get; set; }
 }

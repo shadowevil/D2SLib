@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using D2SLib.Model.Huffman;
 using Microsoft.EntityFrameworkCore;
 
 namespace D2SLib.Model.Data;
@@ -14,6 +15,57 @@ public partial class DatabaseContext : DbContext
         : base(options)
     {
     }
+
+    private HuffmanTree? _itemCodeTree = null;
+    internal HuffmanTree ItemCodeTree
+    {
+        get => _itemCodeTree ??= InitializeHuffmanTree();
+        set => _itemCodeTree = value;
+    }
+
+    private HuffmanTree InitializeHuffmanTree()
+    {
+        var itemCodeTree = new HuffmanTree();
+        itemCodeTree.Build();
+        return itemCodeTree;
+    }
+
+    public T? GetByCode<T>(string code)
+    {
+        if (default(T) is Armor)
+        {
+            return (T?)(object?)Armors.FirstOrDefault(x => x.Code == code.Trim());
+        }
+        else if (default(T) is Weapon)
+        {
+            return (T?)(object?)Weapons.FirstOrDefault(x => x.Code == code.Trim());
+        }
+        else if (default(T) is Misc)
+        {
+            return (T?)(object?)Miscs.FirstOrDefault(x => x.Code == code.Trim());
+        }
+        return default(T);
+    }
+
+    public bool IsArmor(string code) => Armors.Where(x => x.Code == code.Trim()).FirstOrDefault() is not null;
+    public bool IsWeapon(string code) => Weapons.Where(x => x.Code == code.Trim()).FirstOrDefault() is not null;
+    public bool IsMisc(string code) => Miscs.Where(x => x.Code == code.Trim()).FirstOrDefault() is not null;
+
+    public Itemstatcost GetByStat(string stat)
+    {
+        return Itemstatcosts.First(x => x.Stat == stat);
+    }
+
+    public Itemstatcost GetById(ushort id)
+    {
+        return Itemstatcosts.First(x => x.Id == id);
+    }
+
+
+
+
+
+
 
     public virtual DbSet<Actinfo> Actinfos { get; set; }
 
@@ -145,8 +197,6 @@ public partial class DatabaseContext : DbContext
 
     public virtual DbSet<Uniquesuffix> Uniquesuffixes { get; set; }
 
-    public virtual DbSet<Wanderingmon> Wanderingmons { get; set; }
-
     public virtual DbSet<Weapon> Weapons { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -222,28 +272,10 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("armor");
 
-            entity.Property(e => e.AkaraMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Alternategfx)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("alternategfx");
-            entity.Property(e => e.AnyaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AutoPrefix)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("auto_prefix");
+            entity.Property(e => e.AutoPrefix).HasColumnName("auto_prefix");
             entity.Property(e => e.Belt)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("belt");
@@ -251,14 +283,6 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Block)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("block");
-            entity.Property(e => e.CainMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("code");
@@ -267,28 +291,13 @@ public partial class DatabaseContext : DbContext
                 .HasColumnName("compactsave");
             entity.Property(e => e.Component).HasColumnName("component");
             entity.Property(e => e.Cost).HasColumnName("cost");
-            entity.Property(e => e.DexBonus).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Diablocloneweight)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("diablocloneweight");
-            entity.Property(e => e.DrognanMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMin).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Diablocloneweight).HasColumnName("diablocloneweight");
             entity.Property(e => e.Dropsfxframe).HasColumnName("dropsfxframe");
             entity.Property(e => e.Dropsound)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dropsound");
             entity.Property(e => e.Durability).HasColumnName("durability");
             entity.Property(e => e.Durwarning).HasColumnName("durwarning");
-            entity.Property(e => e.ElzixMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Flippyfile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("flippyfile");
@@ -298,70 +307,31 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("gemoffset");
             entity.Property(e => e.Gemsockets).HasColumnName("gemsockets");
-            entity.Property(e => e.GheedMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Hasinv).HasColumnName("hasinv");
             entity.Property(e => e.HellUpgrade).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Invfile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("invfile");
             entity.Property(e => e.Invheight).HasColumnName("invheight");
             entity.Property(e => e.Invwidth).HasColumnName("invwidth");
-            entity.Property(e => e.JamellaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LArm)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("lArm");
-            entity.Property(e => e.LSpad)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("lSPad");
-            entity.Property(e => e.LarzukMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Legs).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.LArm).HasColumnName("lArm");
+            entity.Property(e => e.LSpad).HasColumnName("lSPad");
             entity.Property(e => e.Level).HasColumnName("level");
             entity.Property(e => e.Levelreq).HasColumnName("levelreq");
             entity.Property(e => e.Lightradius)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("lightradius");
-            entity.Property(e => e.LysanderMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MagicLvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("magic_lvl");
-            entity.Property(e => e.MalahMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMin).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.MagicLvl).HasColumnName("magic_lvl");
             entity.Property(e => e.Maxac).HasColumnName("maxac");
             entity.Property(e => e.Maxdam)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("maxdam");
-            entity.Property(e => e.Maxstack)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("maxstack");
+            entity.Property(e => e.Maxstack).HasColumnName("maxstack");
             entity.Property(e => e.Minac).HasColumnName("minac");
             entity.Property(e => e.Mindam)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mindam");
-            entity.Property(e => e.Minstack)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("minstack");
+            entity.Property(e => e.Minstack).HasColumnName("minstack");
             entity.Property(e => e.Missiletype)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("missiletype");
@@ -378,29 +348,17 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Normcode)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("normcode");
-            entity.Property(e => e.OrmusMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.PermStoreItem).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Qntwarning)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("qntwarning");
-            entity.Property(e => e.Quest)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("quest");
-            entity.Property(e => e.Questdiffcheck)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questdiffcheck");
+            entity.Property(e => e.Quest).HasColumnName("quest");
+            entity.Property(e => e.Questdiffcheck).HasColumnName("questdiffcheck");
             entity.Property(e => e.Quivered)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("quivered");
-            entity.Property(e => e.RArm)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rArm");
-            entity.Property(e => e.RSpad)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rSPad");
+            entity.Property(e => e.RArm).HasColumnName("rArm");
+            entity.Property(e => e.RSpad).HasColumnName("rSPad");
             entity.Property(e => e.Rarity).HasColumnName("rarity");
             entity.Property(e => e.Reqdex)
                 .HasColumnType("MEDIUMTEXT")
@@ -412,26 +370,16 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.ShowLevel).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.SkipName).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Spawnable).HasColumnName("spawnable");
-            entity.Property(e => e.Spawnstack)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("spawnstack");
+            entity.Property(e => e.Spawnstack).HasColumnName("spawnstack");
             entity.Property(e => e.Speed)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("speed");
-            entity.Property(e => e.Stackable)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("stackable");
-            entity.Property(e => e.StrBonus).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.TmogMax)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("TMogMax");
-            entity.Property(e => e.TmogMin)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("TMogMin");
+            entity.Property(e => e.Stackable).HasColumnName("stackable");
+            entity.Property(e => e.TmogMax).HasColumnName("TMogMax");
+            entity.Property(e => e.TmogMin).HasColumnName("TMogMin");
             entity.Property(e => e.TmogType)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("TMogType");
-            entity.Property(e => e.Torso).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Transmogrify).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Transparent)
                 .HasColumnType("MEDIUMTEXT")
@@ -440,9 +388,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Type)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("type");
-            entity.Property(e => e.Type2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("type2");
+            entity.Property(e => e.Type2).HasColumnName("type2");
             entity.Property(e => e.Ubercode)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("ubercode");
@@ -483,30 +429,14 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Add)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("add");
-            entity.Property(e => e.Class)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("class");
-            entity.Property(e => e.Classlevelreq)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("classlevelreq");
-            entity.Property(e => e.Classspecific)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("classspecific");
-            entity.Property(e => e.Etype1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype1");
-            entity.Property(e => e.Etype2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype2");
-            entity.Property(e => e.Etype3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype3");
-            entity.Property(e => e.Etype4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype4");
-            entity.Property(e => e.Etype5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype5");
+            entity.Property(e => e.Class).HasColumnName("class");
+            entity.Property(e => e.Classlevelreq).HasColumnName("classlevelreq");
+            entity.Property(e => e.Classspecific).HasColumnName("classspecific");
+            entity.Property(e => e.Etype1).HasColumnName("etype1");
+            entity.Property(e => e.Etype2).HasColumnName("etype2");
+            entity.Property(e => e.Etype3).HasColumnName("etype3");
+            entity.Property(e => e.Etype4).HasColumnName("etype4");
+            entity.Property(e => e.Etype5).HasColumnName("etype5");
             entity.Property(e => e.Frequency).HasColumnName("frequency");
             entity.Property(e => e.Group).HasColumnName("group");
             entity.Property(e => e.Itype1)
@@ -515,58 +445,32 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Itype2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itype2");
-            entity.Property(e => e.Itype3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype3");
-            entity.Property(e => e.Itype4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype4");
-            entity.Property(e => e.Itype5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype5");
-            entity.Property(e => e.Itype6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype6");
-            entity.Property(e => e.Itype7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype7");
+            entity.Property(e => e.Itype3).HasColumnName("itype3");
+            entity.Property(e => e.Itype4).HasColumnName("itype4");
+            entity.Property(e => e.Itype5).HasColumnName("itype5");
+            entity.Property(e => e.Itype6).HasColumnName("itype6");
+            entity.Property(e => e.Itype7).HasColumnName("itype7");
             entity.Property(e => e.Level).HasColumnName("level");
             entity.Property(e => e.Levelreq).HasColumnName("levelreq");
-            entity.Property(e => e.Maxlevel)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("maxlevel");
+            entity.Property(e => e.Maxlevel).HasColumnName("maxlevel");
             entity.Property(e => e.Mod1code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod1code");
             entity.Property(e => e.Mod1max).HasColumnName("mod1max");
             entity.Property(e => e.Mod1min).HasColumnName("mod1min");
-            entity.Property(e => e.Mod1param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod1param");
+            entity.Property(e => e.Mod1param).HasColumnName("mod1param");
             entity.Property(e => e.Mod2code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod2code");
-            entity.Property(e => e.Mod2max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod2max");
-            entity.Property(e => e.Mod2min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod2min");
-            entity.Property(e => e.Mod2param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod2param");
+            entity.Property(e => e.Mod2max).HasColumnName("mod2max");
+            entity.Property(e => e.Mod2min).HasColumnName("mod2min");
+            entity.Property(e => e.Mod2param).HasColumnName("mod2param");
             entity.Property(e => e.Mod3code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod3code");
-            entity.Property(e => e.Mod3max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3max");
-            entity.Property(e => e.Mod3min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3min");
-            entity.Property(e => e.Mod3param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3param");
+            entity.Property(e => e.Mod3max).HasColumnName("mod3max");
+            entity.Property(e => e.Mod3min).HasColumnName("mod3min");
+            entity.Property(e => e.Mod3param).HasColumnName("mod3param");
             entity.Property(e => e.Multiply)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("multiply");
@@ -597,54 +501,22 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Box12left).HasColumnName("box12left");
             entity.Property(e => e.Box12right).HasColumnName("box12right");
             entity.Property(e => e.Box12top).HasColumnName("box12top");
-            entity.Property(e => e.Box13bottom)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box13bottom");
-            entity.Property(e => e.Box13left)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box13left");
-            entity.Property(e => e.Box13right)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box13right");
-            entity.Property(e => e.Box13top)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box13top");
-            entity.Property(e => e.Box14bottom)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box14bottom");
-            entity.Property(e => e.Box14left)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box14left");
-            entity.Property(e => e.Box14right)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box14right");
-            entity.Property(e => e.Box14top)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box14top");
-            entity.Property(e => e.Box15bottom)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box15bottom");
-            entity.Property(e => e.Box15left)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box15left");
-            entity.Property(e => e.Box15right)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box15right");
-            entity.Property(e => e.Box15top)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box15top");
-            entity.Property(e => e.Box16bottom)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box16bottom");
-            entity.Property(e => e.Box16left)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box16left");
-            entity.Property(e => e.Box16right)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box16right");
-            entity.Property(e => e.Box16top)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("box16top");
+            entity.Property(e => e.Box13bottom).HasColumnName("box13bottom");
+            entity.Property(e => e.Box13left).HasColumnName("box13left");
+            entity.Property(e => e.Box13right).HasColumnName("box13right");
+            entity.Property(e => e.Box13top).HasColumnName("box13top");
+            entity.Property(e => e.Box14bottom).HasColumnName("box14bottom");
+            entity.Property(e => e.Box14left).HasColumnName("box14left");
+            entity.Property(e => e.Box14right).HasColumnName("box14right");
+            entity.Property(e => e.Box14top).HasColumnName("box14top");
+            entity.Property(e => e.Box15bottom).HasColumnName("box15bottom");
+            entity.Property(e => e.Box15left).HasColumnName("box15left");
+            entity.Property(e => e.Box15right).HasColumnName("box15right");
+            entity.Property(e => e.Box15top).HasColumnName("box15top");
+            entity.Property(e => e.Box16bottom).HasColumnName("box16bottom");
+            entity.Property(e => e.Box16left).HasColumnName("box16left");
+            entity.Property(e => e.Box16right).HasColumnName("box16right");
+            entity.Property(e => e.Box16top).HasColumnName("box16top");
             entity.Property(e => e.Box1bottom).HasColumnName("box1bottom");
             entity.Property(e => e.Box1left).HasColumnName("box1left");
             entity.Property(e => e.Box1right).HasColumnName("box1right");
@@ -681,15 +553,9 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Box9left).HasColumnName("box9left");
             entity.Property(e => e.Box9right).HasColumnName("box9right");
             entity.Property(e => e.Box9top).HasColumnName("box9top");
-            entity.Property(e => e.DefaultItemCodeCol1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("defaultItemCodeCol1");
-            entity.Property(e => e.DefaultItemCodeCol2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("defaultItemCodeCol2");
-            entity.Property(e => e.DefaultItemCodeCol3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("defaultItemCodeCol3");
+            entity.Property(e => e.DefaultItemCodeCol1).HasColumnName("defaultItemCodeCol1");
+            entity.Property(e => e.DefaultItemCodeCol2).HasColumnName("defaultItemCodeCol2");
+            entity.Property(e => e.DefaultItemCodeCol3).HasColumnName("defaultItemCodeCol3");
             entity.Property(e => e.DefaultItemCodeCol4)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("defaultItemCodeCol4");
@@ -762,9 +628,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Item10count)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item10count");
-            entity.Property(e => e.Item10loc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item10loc");
+            entity.Property(e => e.Item10loc).HasColumnName("item10loc");
             entity.Property(e => e.Item10quality).HasColumnName("item10quality");
             entity.Property(e => e.Item1count).HasColumnName("item1count");
             entity.Property(e => e.Item1loc)
@@ -783,25 +647,19 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item3");
             entity.Property(e => e.Item3count).HasColumnName("item3count");
-            entity.Property(e => e.Item3loc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item3loc");
+            entity.Property(e => e.Item3loc).HasColumnName("item3loc");
             entity.Property(e => e.Item3quality).HasColumnName("item3quality");
             entity.Property(e => e.Item4)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item4");
             entity.Property(e => e.Item4count).HasColumnName("item4count");
-            entity.Property(e => e.Item4loc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item4loc");
+            entity.Property(e => e.Item4loc).HasColumnName("item4loc");
             entity.Property(e => e.Item4quality).HasColumnName("item4quality");
             entity.Property(e => e.Item5)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item5");
             entity.Property(e => e.Item5count).HasColumnName("item5count");
-            entity.Property(e => e.Item5loc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item5loc");
+            entity.Property(e => e.Item5loc).HasColumnName("item5loc");
             entity.Property(e => e.Item5quality).HasColumnName("item5quality");
             entity.Property(e => e.Item6)
                 .HasColumnType("MEDIUMTEXT")
@@ -809,9 +667,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Item6count)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item6count");
-            entity.Property(e => e.Item6loc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item6loc");
+            entity.Property(e => e.Item6loc).HasColumnName("item6loc");
             entity.Property(e => e.Item6quality).HasColumnName("item6quality");
             entity.Property(e => e.Item7)
                 .HasColumnType("MEDIUMTEXT")
@@ -819,9 +675,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Item7count)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item7count");
-            entity.Property(e => e.Item7loc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item7loc");
+            entity.Property(e => e.Item7loc).HasColumnName("item7loc");
             entity.Property(e => e.Item7quality).HasColumnName("item7quality");
             entity.Property(e => e.Item8)
                 .HasColumnType("MEDIUMTEXT")
@@ -829,9 +683,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Item8count)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item8count");
-            entity.Property(e => e.Item8loc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item8loc");
+            entity.Property(e => e.Item8loc).HasColumnName("item8loc");
             entity.Property(e => e.Item8quality).HasColumnName("item8quality");
             entity.Property(e => e.Item9)
                 .HasColumnType("MEDIUMTEXT")
@@ -839,16 +691,12 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Item9count)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item9count");
-            entity.Property(e => e.Item9loc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item9loc");
+            entity.Property(e => e.Item9loc).HasColumnName("item9loc");
             entity.Property(e => e.Item9quality).HasColumnName("item9quality");
             entity.Property(e => e.Skill1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Skill_1");
-            entity.Property(e => e.Skill10)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("Skill_10");
+            entity.Property(e => e.Skill10).HasColumnName("Skill_10");
             entity.Property(e => e.Skill2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Skill_2");
@@ -926,177 +774,63 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("cubemain");
 
-            entity.Property(e => e.BIlvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_ilvl");
-            entity.Property(e => e.BLvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_lvl");
-            entity.Property(e => e.BMod1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_1");
-            entity.Property(e => e.BMod1Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_1_chance");
-            entity.Property(e => e.BMod1Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_1_max");
-            entity.Property(e => e.BMod1Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_1_min");
-            entity.Property(e => e.BMod1Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_1_param");
-            entity.Property(e => e.BMod2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_2");
-            entity.Property(e => e.BMod2Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_2_chance");
-            entity.Property(e => e.BMod2Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_2_max");
-            entity.Property(e => e.BMod2Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_2_min");
-            entity.Property(e => e.BMod2Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_2_param");
-            entity.Property(e => e.BMod3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_3");
-            entity.Property(e => e.BMod3Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_3_chance");
-            entity.Property(e => e.BMod3Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_3_max");
-            entity.Property(e => e.BMod3Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_3_min");
-            entity.Property(e => e.BMod3Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_3_param");
-            entity.Property(e => e.BMod4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_4");
-            entity.Property(e => e.BMod4Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_4_chance");
-            entity.Property(e => e.BMod4Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_4_max");
-            entity.Property(e => e.BMod4Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_4_min");
-            entity.Property(e => e.BMod4Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_4_param");
-            entity.Property(e => e.BMod5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_5");
-            entity.Property(e => e.BMod5Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_5_chance");
-            entity.Property(e => e.BMod5Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_5_max");
-            entity.Property(e => e.BMod5Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_5_min");
-            entity.Property(e => e.BMod5Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_mod_5_param");
-            entity.Property(e => e.BPlvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("b_plvl");
-            entity.Property(e => e.CIlvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_ilvl");
-            entity.Property(e => e.CLvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_lvl");
-            entity.Property(e => e.CMod1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_1");
-            entity.Property(e => e.CMod1Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_1_chance");
-            entity.Property(e => e.CMod1Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_1_max");
-            entity.Property(e => e.CMod1Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_1_min");
-            entity.Property(e => e.CMod1Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_1_param");
-            entity.Property(e => e.CMod2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_2");
-            entity.Property(e => e.CMod2Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_2_chance");
-            entity.Property(e => e.CMod2Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_2_max");
-            entity.Property(e => e.CMod2Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_2_min");
-            entity.Property(e => e.CMod2Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_2_param");
-            entity.Property(e => e.CMod3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_3");
-            entity.Property(e => e.CMod3Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_3_chance");
-            entity.Property(e => e.CMod3Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_3_max");
-            entity.Property(e => e.CMod3Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_3_min");
-            entity.Property(e => e.CMod3Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_3_param");
-            entity.Property(e => e.CMod4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_4");
-            entity.Property(e => e.CMod4Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_4_chance");
-            entity.Property(e => e.CMod4Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_4_max");
-            entity.Property(e => e.CMod4Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_4_min");
-            entity.Property(e => e.CMod4Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_4_param");
-            entity.Property(e => e.CMod5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_5");
-            entity.Property(e => e.CMod5Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_5_chance");
-            entity.Property(e => e.CMod5Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_5_max");
-            entity.Property(e => e.CMod5Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_5_min");
-            entity.Property(e => e.CMod5Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_mod_5_param");
-            entity.Property(e => e.CPlvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("c_plvl");
-            entity.Property(e => e.Class)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("class");
+            entity.Property(e => e.BIlvl).HasColumnName("b_ilvl");
+            entity.Property(e => e.BLvl).HasColumnName("b_lvl");
+            entity.Property(e => e.BMod1).HasColumnName("b_mod_1");
+            entity.Property(e => e.BMod1Chance).HasColumnName("b_mod_1_chance");
+            entity.Property(e => e.BMod1Max).HasColumnName("b_mod_1_max");
+            entity.Property(e => e.BMod1Min).HasColumnName("b_mod_1_min");
+            entity.Property(e => e.BMod1Param).HasColumnName("b_mod_1_param");
+            entity.Property(e => e.BMod2).HasColumnName("b_mod_2");
+            entity.Property(e => e.BMod2Chance).HasColumnName("b_mod_2_chance");
+            entity.Property(e => e.BMod2Max).HasColumnName("b_mod_2_max");
+            entity.Property(e => e.BMod2Min).HasColumnName("b_mod_2_min");
+            entity.Property(e => e.BMod2Param).HasColumnName("b_mod_2_param");
+            entity.Property(e => e.BMod3).HasColumnName("b_mod_3");
+            entity.Property(e => e.BMod3Chance).HasColumnName("b_mod_3_chance");
+            entity.Property(e => e.BMod3Max).HasColumnName("b_mod_3_max");
+            entity.Property(e => e.BMod3Min).HasColumnName("b_mod_3_min");
+            entity.Property(e => e.BMod3Param).HasColumnName("b_mod_3_param");
+            entity.Property(e => e.BMod4).HasColumnName("b_mod_4");
+            entity.Property(e => e.BMod4Chance).HasColumnName("b_mod_4_chance");
+            entity.Property(e => e.BMod4Max).HasColumnName("b_mod_4_max");
+            entity.Property(e => e.BMod4Min).HasColumnName("b_mod_4_min");
+            entity.Property(e => e.BMod4Param).HasColumnName("b_mod_4_param");
+            entity.Property(e => e.BMod5).HasColumnName("b_mod_5");
+            entity.Property(e => e.BMod5Chance).HasColumnName("b_mod_5_chance");
+            entity.Property(e => e.BMod5Max).HasColumnName("b_mod_5_max");
+            entity.Property(e => e.BMod5Min).HasColumnName("b_mod_5_min");
+            entity.Property(e => e.BMod5Param).HasColumnName("b_mod_5_param");
+            entity.Property(e => e.BPlvl).HasColumnName("b_plvl");
+            entity.Property(e => e.CIlvl).HasColumnName("c_ilvl");
+            entity.Property(e => e.CLvl).HasColumnName("c_lvl");
+            entity.Property(e => e.CMod1).HasColumnName("c_mod_1");
+            entity.Property(e => e.CMod1Chance).HasColumnName("c_mod_1_chance");
+            entity.Property(e => e.CMod1Max).HasColumnName("c_mod_1_max");
+            entity.Property(e => e.CMod1Min).HasColumnName("c_mod_1_min");
+            entity.Property(e => e.CMod1Param).HasColumnName("c_mod_1_param");
+            entity.Property(e => e.CMod2).HasColumnName("c_mod_2");
+            entity.Property(e => e.CMod2Chance).HasColumnName("c_mod_2_chance");
+            entity.Property(e => e.CMod2Max).HasColumnName("c_mod_2_max");
+            entity.Property(e => e.CMod2Min).HasColumnName("c_mod_2_min");
+            entity.Property(e => e.CMod2Param).HasColumnName("c_mod_2_param");
+            entity.Property(e => e.CMod3).HasColumnName("c_mod_3");
+            entity.Property(e => e.CMod3Chance).HasColumnName("c_mod_3_chance");
+            entity.Property(e => e.CMod3Max).HasColumnName("c_mod_3_max");
+            entity.Property(e => e.CMod3Min).HasColumnName("c_mod_3_min");
+            entity.Property(e => e.CMod3Param).HasColumnName("c_mod_3_param");
+            entity.Property(e => e.CMod4).HasColumnName("c_mod_4");
+            entity.Property(e => e.CMod4Chance).HasColumnName("c_mod_4_chance");
+            entity.Property(e => e.CMod4Max).HasColumnName("c_mod_4_max");
+            entity.Property(e => e.CMod4Min).HasColumnName("c_mod_4_min");
+            entity.Property(e => e.CMod4Param).HasColumnName("c_mod_4_param");
+            entity.Property(e => e.CMod5).HasColumnName("c_mod_5");
+            entity.Property(e => e.CMod5Chance).HasColumnName("c_mod_5_chance");
+            entity.Property(e => e.CMod5Max).HasColumnName("c_mod_5_max");
+            entity.Property(e => e.CMod5Min).HasColumnName("c_mod_5_min");
+            entity.Property(e => e.CMod5Param).HasColumnName("c_mod_5_param");
+            entity.Property(e => e.CPlvl).HasColumnName("c_plvl");
+            entity.Property(e => e.Class).HasColumnName("class");
             entity.Property(e => e.Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("description");
@@ -1104,12 +838,8 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
-            entity.Property(e => e.FirstLadderSeason)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("firstLadderSeason");
-            entity.Property(e => e.Ilvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ilvl");
+            entity.Property(e => e.FirstLadderSeason).HasColumnName("firstLadderSeason");
+            entity.Property(e => e.Ilvl).HasColumnName("ilvl");
             entity.Property(e => e.Input1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("input_1");
@@ -1131,112 +861,52 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Input7)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("input_7");
-            entity.Property(e => e.LastLadderSeason)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("lastLadderSeason");
-            entity.Property(e => e.Lvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("lvl");
-            entity.Property(e => e.MinDiff)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min_diff");
+            entity.Property(e => e.LastLadderSeason).HasColumnName("lastLadderSeason");
+            entity.Property(e => e.Lvl).HasColumnName("lvl");
+            entity.Property(e => e.MinDiff).HasColumnName("min_diff");
             entity.Property(e => e.Mod1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod_1");
-            entity.Property(e => e.Mod1Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_1_chance");
-            entity.Property(e => e.Mod1Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_1_max");
-            entity.Property(e => e.Mod1Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_1_min");
-            entity.Property(e => e.Mod1Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_1_param");
+            entity.Property(e => e.Mod1Chance).HasColumnName("mod_1_chance");
+            entity.Property(e => e.Mod1Max).HasColumnName("mod_1_max");
+            entity.Property(e => e.Mod1Min).HasColumnName("mod_1_min");
+            entity.Property(e => e.Mod1Param).HasColumnName("mod_1_param");
             entity.Property(e => e.Mod2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod_2");
-            entity.Property(e => e.Mod2Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_2_chance");
-            entity.Property(e => e.Mod2Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_2_max");
-            entity.Property(e => e.Mod2Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_2_min");
-            entity.Property(e => e.Mod2Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_2_param");
+            entity.Property(e => e.Mod2Chance).HasColumnName("mod_2_chance");
+            entity.Property(e => e.Mod2Max).HasColumnName("mod_2_max");
+            entity.Property(e => e.Mod2Min).HasColumnName("mod_2_min");
+            entity.Property(e => e.Mod2Param).HasColumnName("mod_2_param");
             entity.Property(e => e.Mod3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod_3");
-            entity.Property(e => e.Mod3Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_3_chance");
-            entity.Property(e => e.Mod3Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_3_max");
-            entity.Property(e => e.Mod3Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_3_min");
-            entity.Property(e => e.Mod3Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_3_param");
+            entity.Property(e => e.Mod3Chance).HasColumnName("mod_3_chance");
+            entity.Property(e => e.Mod3Max).HasColumnName("mod_3_max");
+            entity.Property(e => e.Mod3Min).HasColumnName("mod_3_min");
+            entity.Property(e => e.Mod3Param).HasColumnName("mod_3_param");
             entity.Property(e => e.Mod4)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod_4");
-            entity.Property(e => e.Mod4Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_4_chance");
-            entity.Property(e => e.Mod4Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_4_max");
-            entity.Property(e => e.Mod4Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_4_min");
-            entity.Property(e => e.Mod4Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_4_param");
-            entity.Property(e => e.Mod5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_5");
-            entity.Property(e => e.Mod5Chance)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_5_chance");
-            entity.Property(e => e.Mod5Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_5_max");
-            entity.Property(e => e.Mod5Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_5_min");
-            entity.Property(e => e.Mod5Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod_5_param");
+            entity.Property(e => e.Mod4Chance).HasColumnName("mod_4_chance");
+            entity.Property(e => e.Mod4Max).HasColumnName("mod_4_max");
+            entity.Property(e => e.Mod4Min).HasColumnName("mod_4_min");
+            entity.Property(e => e.Mod4Param).HasColumnName("mod_4_param");
+            entity.Property(e => e.Mod5).HasColumnName("mod_5");
+            entity.Property(e => e.Mod5Chance).HasColumnName("mod_5_chance");
+            entity.Property(e => e.Mod5Max).HasColumnName("mod_5_max");
+            entity.Property(e => e.Mod5Min).HasColumnName("mod_5_min");
+            entity.Property(e => e.Mod5Param).HasColumnName("mod_5_param");
             entity.Property(e => e.Numinputs).HasColumnName("numinputs");
-            entity.Property(e => e.Op)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("op");
+            entity.Property(e => e.Op).HasColumnName("op");
             entity.Property(e => e.Output)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("output");
-            entity.Property(e => e.OutputB)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("output_b");
-            entity.Property(e => e.OutputC)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("output_c");
-            entity.Property(e => e.Param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("param");
-            entity.Property(e => e.Plvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("plvl");
-            entity.Property(e => e.Value)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("value");
+            entity.Property(e => e.OutputB).HasColumnName("output_b");
+            entity.Property(e => e.OutputC).HasColumnName("output_c");
+            entity.Property(e => e.Param).HasColumnName("param");
+            entity.Property(e => e.Plvl).HasColumnName("plvl");
+            entity.Property(e => e.Value).HasColumnName("value");
             entity.Property(e => e.Version).HasColumnName("version");
         });
 
@@ -1350,9 +1020,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.HelmMod2Param)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("helmMod2Param");
-            entity.Property(e => e.HelmMod3Code)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("helmMod3Code");
+            entity.Property(e => e.HelmMod3Code).HasColumnName("helmMod3Code");
             entity.Property(e => e.HelmMod3Max)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("helmMod3Max");
@@ -1388,9 +1056,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.ShieldMod2Param)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("shieldMod2Param");
-            entity.Property(e => e.ShieldMod3Code)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("shieldMod3Code");
+            entity.Property(e => e.ShieldMod3Code).HasColumnName("shieldMod3Code");
             entity.Property(e => e.ShieldMod3Max)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("shieldMod3Max");
@@ -1412,12 +1078,8 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.WeaponMod2Code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("weaponMod2Code");
-            entity.Property(e => e.WeaponMod2Max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("weaponMod2Max");
-            entity.Property(e => e.WeaponMod2Min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("weaponMod2Min");
+            entity.Property(e => e.WeaponMod2Max).HasColumnName("weaponMod2Max");
+            entity.Property(e => e.WeaponMod2Min).HasColumnName("weaponMod2Min");
             entity.Property(e => e.WeaponMod2Param)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("weaponMod2Param");
@@ -1443,16 +1105,9 @@ public partial class DatabaseContext : DbContext
 
             entity.Property(e => e.Ar).HasColumnName("AR");
             entity.Property(e => e.ArLvl).HasColumnName("AR/Lvl");
-            entity.Property(e => e.Chance3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Chance4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Chance5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Chance6).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ChancePerLvl1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ChancePerLvl2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ChancePerLvl3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ChancePerLvl4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ChancePerLvl5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ChancePerLvl6).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.DefLvl).HasColumnName("Def/Lvl");
             entity.Property(e => e.DexLvl).HasColumnName("Dex/Lvl");
             entity.Property(e => e.DmgLvl).HasColumnName("Dmg/Lvl");
@@ -1468,18 +1123,6 @@ public partial class DatabaseContext : DbContext
                 .HasColumnName("Hireling");
             entity.Property(e => e.Hp).HasColumnName("HP");
             entity.Property(e => e.HpLvl).HasColumnName("HP/Lvl");
-            entity.Property(e => e.Level3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Level4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Level5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Level6).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LvlPerLvl3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LvlPerLvl4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LvlPerLvl5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LvlPerLvl6).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Mode3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Mode4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Mode5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Mode6).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.NameFirst).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.NameLast).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ResistColdLvl).HasColumnName("ResistCold/Lvl");
@@ -1492,9 +1135,6 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Skill1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Skill2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Skill3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Skill4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Skill5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Skill6).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.StrLvl).HasColumnName("Str/Lvl");
             entity.Property(e => e.SubType).HasColumnType("MEDIUMTEXT");
         });
@@ -1505,9 +1145,7 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("hirelingdesc");
 
-            entity.Property(e => e.AlternateVoice)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("alternateVoice");
+            entity.Property(e => e.AlternateVoice).HasColumnName("alternateVoice");
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
@@ -1630,21 +1268,13 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("itemstatcost");
 
-            entity.Property(e => e.Advdisplay)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("advdisplay");
-            entity.Property(e => e.CsvBits)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("CSvBits");
-            entity.Property(e => e.CsvParam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("CSvParam");
+            entity.Property(e => e.Advdisplay).HasColumnName("advdisplay");
+            entity.Property(e => e.CsvBits).HasColumnName("CSvBits");
+            entity.Property(e => e.CsvParam).HasColumnName("CSvParam");
             entity.Property(e => e.CsvSigned)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("CSvSigned");
-            entity.Property(e => e.Damagerelated)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("damagerelated");
+            entity.Property(e => e.Damagerelated).HasColumnName("damagerelated");
             entity.Property(e => e.Descfunc).HasColumnName("descfunc");
             entity.Property(e => e.Descpriority).HasColumnName("descpriority");
             entity.Property(e => e.Descstr2)
@@ -1656,40 +1286,23 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Descstrpos)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("descstrpos");
-            entity.Property(e => e.Descval)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("descval");
-            entity.Property(e => e.Dgrp)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dgrp");
-            entity.Property(e => e.Dgrpfunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dgrpfunc");
-            entity.Property(e => e.Dgrpstr2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dgrpstr2");
+            entity.Property(e => e.Descval).HasColumnName("descval");
+            entity.Property(e => e.Dgrp).HasColumnName("dgrp");
+            entity.Property(e => e.Dgrpfunc).HasColumnName("dgrpfunc");
+            entity.Property(e => e.Dgrpstr2).HasColumnName("dgrpstr2");
             entity.Property(e => e.Dgrpstrneg)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dgrpstrneg");
             entity.Property(e => e.Dgrpstrpos)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dgrpstrpos");
-            entity.Property(e => e.Dgrpval)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dgrpval");
-            entity.Property(e => e.Direct)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("direct");
-            entity.Property(e => e.Encode).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Dgrpval).HasColumnName("dgrpval");
+            entity.Property(e => e.Direct).HasColumnName("direct");
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
-            entity.Property(e => e.FCallback)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("fCallback");
-            entity.Property(e => e.FMin)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("fMin");
+            entity.Property(e => e.FCallback).HasColumnName("fCallback");
+            entity.Property(e => e.FMin).HasColumnName("fMin");
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.Itemevent1)
                 .HasColumnType("MEDIUMTEXT")
@@ -1697,28 +1310,17 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Itemevent2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itemevent2");
-            entity.Property(e => e.Itemeventfunc1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itemeventfunc1");
-            entity.Property(e => e.Itemeventfunc2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itemeventfunc2");
-            entity.Property(e => e.Keepzero)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("keepzero");
+            entity.Property(e => e.Itemeventfunc1).HasColumnName("itemeventfunc1");
+            entity.Property(e => e.Itemeventfunc2).HasColumnName("itemeventfunc2");
+            entity.Property(e => e.Keepzero).HasColumnName("keepzero");
             entity.Property(e => e.Maxstat)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("maxstat");
-            entity.Property(e => e.MinAccr).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Op)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("op");
+            entity.Property(e => e.Op).HasColumnName("op");
             entity.Property(e => e.OpBase)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("op_base");
-            entity.Property(e => e.OpParam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("op_param");
+            entity.Property(e => e.OpParam).HasColumnName("op_param");
             entity.Property(e => e.OpStat1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("op_stat1");
@@ -1732,23 +1334,12 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Save_Add");
             entity.Property(e => e.SaveBits).HasColumnName("Save_Bits");
-            entity.Property(e => e.SaveParamBits)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("Save_Param_Bits");
-            entity.Property(e => e.Saved).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.SaveParamBits).HasColumnName("Save_Param_Bits");
             entity.Property(e => e.SendBits).HasColumnName("Send_Bits");
-            entity.Property(e => e.SendOther)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("Send_Other");
-            entity.Property(e => e.SendParamBits)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("Send_Param_Bits");
+            entity.Property(e => e.SendOther).HasColumnName("Send_Other");
+            entity.Property(e => e.SendParamBits).HasColumnName("Send_Param_Bits");
             entity.Property(e => e.Stat).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Stuff)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("stuff");
-            entity.Property(e => e.UpdateAnimRate).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ValShift).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Stuff).HasColumnName("stuff");
             entity.Property(e => e._109SaveAdd)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("1.09-Save_Add");
@@ -1782,7 +1373,6 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.ItemType1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("ItemType");
-            entity.Property(e => e.Magic).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.MaxSockets1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.MaxSockets2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.MaxSockets3).HasColumnType("MEDIUMTEXT");
@@ -1805,18 +1395,10 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("levels");
 
-            entity.Property(e => e.Camt1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("camt1");
-            entity.Property(e => e.Camt2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("camt2");
-            entity.Property(e => e.Camt3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("camt3");
-            entity.Property(e => e.Camt4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("camt4");
+            entity.Property(e => e.Camt1).HasColumnName("camt1");
+            entity.Property(e => e.Camt2).HasColumnName("camt2");
+            entity.Property(e => e.Camt3).HasColumnName("camt3");
+            entity.Property(e => e.Camt4).HasColumnName("camt4");
             entity.Property(e => e.Cmon1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cmon1");
@@ -1830,15 +1412,9 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cmon4");
             entity.Property(e => e.Cpct1).HasColumnName("cpct1");
-            entity.Property(e => e.Cpct2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cpct2");
-            entity.Property(e => e.Cpct3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cpct3");
-            entity.Property(e => e.Cpct4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cpct4");
+            entity.Property(e => e.Cpct2).HasColumnName("cpct2");
+            entity.Property(e => e.Cpct3).HasColumnName("cpct3");
+            entity.Property(e => e.Cpct4).HasColumnName("cpct4");
             entity.Property(e => e.Depend).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.DrawEdges).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Intensity).HasColumnType("MEDIUMTEXT");
@@ -1850,57 +1426,25 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Mon1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mon1");
-            entity.Property(e => e.Mon10)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon10");
-            entity.Property(e => e.Mon11)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon11");
-            entity.Property(e => e.Mon12)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon12");
-            entity.Property(e => e.Mon13)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon13");
-            entity.Property(e => e.Mon14)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon14");
-            entity.Property(e => e.Mon15)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon15");
-            entity.Property(e => e.Mon16)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon16");
-            entity.Property(e => e.Mon17)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon17");
-            entity.Property(e => e.Mon18)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon18");
-            entity.Property(e => e.Mon19)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon19");
+            entity.Property(e => e.Mon10).HasColumnName("mon10");
+            entity.Property(e => e.Mon11).HasColumnName("mon11");
+            entity.Property(e => e.Mon12).HasColumnName("mon12");
+            entity.Property(e => e.Mon13).HasColumnName("mon13");
+            entity.Property(e => e.Mon14).HasColumnName("mon14");
+            entity.Property(e => e.Mon15).HasColumnName("mon15");
+            entity.Property(e => e.Mon16).HasColumnName("mon16");
+            entity.Property(e => e.Mon17).HasColumnName("mon17");
+            entity.Property(e => e.Mon18).HasColumnName("mon18");
+            entity.Property(e => e.Mon19).HasColumnName("mon19");
             entity.Property(e => e.Mon2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mon2");
-            entity.Property(e => e.Mon20)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon20");
-            entity.Property(e => e.Mon21)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon21");
-            entity.Property(e => e.Mon22)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon22");
-            entity.Property(e => e.Mon23)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon23");
-            entity.Property(e => e.Mon24)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon24");
-            entity.Property(e => e.Mon25)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon25");
+            entity.Property(e => e.Mon20).HasColumnName("mon20");
+            entity.Property(e => e.Mon21).HasColumnName("mon21");
+            entity.Property(e => e.Mon22).HasColumnName("mon22");
+            entity.Property(e => e.Mon23).HasColumnName("mon23");
+            entity.Property(e => e.Mon24).HasColumnName("mon24");
+            entity.Property(e => e.Mon25).HasColumnName("mon25");
             entity.Property(e => e.Mon3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mon3");
@@ -1919,9 +1463,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Mon8)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mon8");
-            entity.Property(e => e.Mon9)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mon9");
+            entity.Property(e => e.Mon9).HasColumnName("mon9");
             entity.Property(e => e.MonDenH).HasColumnName("MonDen(H)");
             entity.Property(e => e.MonDenN).HasColumnName("MonDen(N)");
             entity.Property(e => e.MonLvlExH).HasColumnName("MonLvlEx(H)");
@@ -1945,54 +1487,24 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Nmon10)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("nmon10");
-            entity.Property(e => e.Nmon11)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon11");
-            entity.Property(e => e.Nmon12)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon12");
-            entity.Property(e => e.Nmon13)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon13");
-            entity.Property(e => e.Nmon14)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon14");
-            entity.Property(e => e.Nmon15)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon15");
-            entity.Property(e => e.Nmon16)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon16");
-            entity.Property(e => e.Nmon17)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon17");
-            entity.Property(e => e.Nmon18)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon18");
-            entity.Property(e => e.Nmon19)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon19");
+            entity.Property(e => e.Nmon11).HasColumnName("nmon11");
+            entity.Property(e => e.Nmon12).HasColumnName("nmon12");
+            entity.Property(e => e.Nmon13).HasColumnName("nmon13");
+            entity.Property(e => e.Nmon14).HasColumnName("nmon14");
+            entity.Property(e => e.Nmon15).HasColumnName("nmon15");
+            entity.Property(e => e.Nmon16).HasColumnName("nmon16");
+            entity.Property(e => e.Nmon17).HasColumnName("nmon17");
+            entity.Property(e => e.Nmon18).HasColumnName("nmon18");
+            entity.Property(e => e.Nmon19).HasColumnName("nmon19");
             entity.Property(e => e.Nmon2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("nmon2");
-            entity.Property(e => e.Nmon20)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon20");
-            entity.Property(e => e.Nmon21)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon21");
-            entity.Property(e => e.Nmon22)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon22");
-            entity.Property(e => e.Nmon23)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon23");
-            entity.Property(e => e.Nmon24)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon24");
-            entity.Property(e => e.Nmon25)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nmon25");
+            entity.Property(e => e.Nmon20).HasColumnName("nmon20");
+            entity.Property(e => e.Nmon21).HasColumnName("nmon21");
+            entity.Property(e => e.Nmon22).HasColumnName("nmon22");
+            entity.Property(e => e.Nmon23).HasColumnName("nmon23");
+            entity.Property(e => e.Nmon24).HasColumnName("nmon24");
+            entity.Property(e => e.Nmon25).HasColumnName("nmon25");
             entity.Property(e => e.Nmon3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("nmon3");
@@ -2026,12 +1538,8 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Portal).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Position).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Quest).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.QuestFlag).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.QuestFlagEx).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Rain).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Rangedspawn)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rangedspawn");
+            entity.Property(e => e.Rangedspawn).HasColumnName("rangedspawn");
             entity.Property(e => e.SizeXH).HasColumnName("SizeX(H)");
             entity.Property(e => e.SizeXN).HasColumnName("SizeX(N)");
             entity.Property(e => e.SizeYH).HasColumnName("SizeY(H)");
@@ -2041,57 +1549,25 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Umon1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("umon1");
-            entity.Property(e => e.Umon10)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon10");
-            entity.Property(e => e.Umon11)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon11");
-            entity.Property(e => e.Umon12)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon12");
-            entity.Property(e => e.Umon13)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon13");
-            entity.Property(e => e.Umon14)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon14");
-            entity.Property(e => e.Umon15)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon15");
-            entity.Property(e => e.Umon16)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon16");
-            entity.Property(e => e.Umon17)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon17");
-            entity.Property(e => e.Umon18)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon18");
-            entity.Property(e => e.Umon19)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon19");
+            entity.Property(e => e.Umon10).HasColumnName("umon10");
+            entity.Property(e => e.Umon11).HasColumnName("umon11");
+            entity.Property(e => e.Umon12).HasColumnName("umon12");
+            entity.Property(e => e.Umon13).HasColumnName("umon13");
+            entity.Property(e => e.Umon14).HasColumnName("umon14");
+            entity.Property(e => e.Umon15).HasColumnName("umon15");
+            entity.Property(e => e.Umon16).HasColumnName("umon16");
+            entity.Property(e => e.Umon17).HasColumnName("umon17");
+            entity.Property(e => e.Umon18).HasColumnName("umon18");
+            entity.Property(e => e.Umon19).HasColumnName("umon19");
             entity.Property(e => e.Umon2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("umon2");
-            entity.Property(e => e.Umon20)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon20");
-            entity.Property(e => e.Umon21)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon21");
-            entity.Property(e => e.Umon22)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon22");
-            entity.Property(e => e.Umon23)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon23");
-            entity.Property(e => e.Umon24)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon24");
-            entity.Property(e => e.Umon25)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon25");
+            entity.Property(e => e.Umon20).HasColumnName("umon20");
+            entity.Property(e => e.Umon21).HasColumnName("umon21");
+            entity.Property(e => e.Umon22).HasColumnName("umon22");
+            entity.Property(e => e.Umon23).HasColumnName("umon23");
+            entity.Property(e => e.Umon24).HasColumnName("umon24");
+            entity.Property(e => e.Umon25).HasColumnName("umon25");
             entity.Property(e => e.Umon3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("umon3");
@@ -2110,9 +1586,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Umon8)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("umon8");
-            entity.Property(e => e.Umon9)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("umon9");
+            entity.Property(e => e.Umon9).HasColumnName("umon9");
             entity.Property(e => e.Vis1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Vis2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Vis3).HasColumnType("MEDIUMTEXT");
@@ -2363,12 +1837,8 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Add)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("add");
-            entity.Property(e => e.Class)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("class");
-            entity.Property(e => e.Classlevelreq)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("classlevelreq");
+            entity.Property(e => e.Class).HasColumnName("class");
+            entity.Property(e => e.Classlevelreq).HasColumnName("classlevelreq");
             entity.Property(e => e.Classspecific)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("classspecific");
@@ -2412,41 +1882,27 @@ public partial class DatabaseContext : DbContext
                 .HasColumnName("itype7");
             entity.Property(e => e.Level).HasColumnName("level");
             entity.Property(e => e.Levelreq).HasColumnName("levelreq");
-            entity.Property(e => e.Maxlevel)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("maxlevel");
+            entity.Property(e => e.Maxlevel).HasColumnName("maxlevel");
             entity.Property(e => e.Mod1code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod1code");
             entity.Property(e => e.Mod1max).HasColumnName("mod1max");
             entity.Property(e => e.Mod1min).HasColumnName("mod1min");
-            entity.Property(e => e.Mod1param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod1param");
+            entity.Property(e => e.Mod1param).HasColumnName("mod1param");
             entity.Property(e => e.Mod2code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod2code");
-            entity.Property(e => e.Mod2max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod2max");
-            entity.Property(e => e.Mod2min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod2min");
+            entity.Property(e => e.Mod2max).HasColumnName("mod2max");
+            entity.Property(e => e.Mod2min).HasColumnName("mod2min");
             entity.Property(e => e.Mod2param)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod2param");
             entity.Property(e => e.Mod3code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod3code");
-            entity.Property(e => e.Mod3max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3max");
-            entity.Property(e => e.Mod3min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3min");
-            entity.Property(e => e.Mod3param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3param");
+            entity.Property(e => e.Mod3max).HasColumnName("mod3max");
+            entity.Property(e => e.Mod3min).HasColumnName("mod3min");
+            entity.Property(e => e.Mod3param).HasColumnName("mod3param");
             entity.Property(e => e.Multiply)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("multiply");
@@ -2471,12 +1927,8 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Class)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("class");
-            entity.Property(e => e.Classlevelreq)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("classlevelreq");
-            entity.Property(e => e.Classspecific)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("classspecific");
+            entity.Property(e => e.Classlevelreq).HasColumnName("classlevelreq");
+            entity.Property(e => e.Classspecific).HasColumnName("classspecific");
             entity.Property(e => e.Etype1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("etype1");
@@ -2486,12 +1938,8 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Etype3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("etype3");
-            entity.Property(e => e.Etype4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype4");
-            entity.Property(e => e.Etype5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype5");
+            entity.Property(e => e.Etype4).HasColumnName("etype4");
+            entity.Property(e => e.Etype5).HasColumnName("etype5");
             entity.Property(e => e.Frequency).HasColumnName("frequency");
             entity.Property(e => e.Group).HasColumnName("group");
             entity.Property(e => e.Itype1)
@@ -2517,41 +1965,25 @@ public partial class DatabaseContext : DbContext
                 .HasColumnName("itype7");
             entity.Property(e => e.Level).HasColumnName("level");
             entity.Property(e => e.Levelreq).HasColumnName("levelreq");
-            entity.Property(e => e.Maxlevel)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("maxlevel");
+            entity.Property(e => e.Maxlevel).HasColumnName("maxlevel");
             entity.Property(e => e.Mod1code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod1code");
             entity.Property(e => e.Mod1max).HasColumnName("mod1max");
             entity.Property(e => e.Mod1min).HasColumnName("mod1min");
-            entity.Property(e => e.Mod1param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod1param");
+            entity.Property(e => e.Mod1param).HasColumnName("mod1param");
             entity.Property(e => e.Mod2code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod2code");
-            entity.Property(e => e.Mod2max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod2max");
-            entity.Property(e => e.Mod2min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod2min");
-            entity.Property(e => e.Mod2param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod2param");
+            entity.Property(e => e.Mod2max).HasColumnName("mod2max");
+            entity.Property(e => e.Mod2min).HasColumnName("mod2min");
+            entity.Property(e => e.Mod2param).HasColumnName("mod2param");
             entity.Property(e => e.Mod3code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("mod3code");
-            entity.Property(e => e.Mod3max)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3max");
-            entity.Property(e => e.Mod3min)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3min");
-            entity.Property(e => e.Mod3param)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mod3param");
+            entity.Property(e => e.Mod3max).HasColumnName("mod3max");
+            entity.Property(e => e.Mod3min).HasColumnName("mod3min");
+            entity.Property(e => e.Mod3param).HasColumnName("mod3param");
             entity.Property(e => e.Multiply)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("multiply");
@@ -2570,25 +2002,9 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("misc");
 
-            entity.Property(e => e.AkaraMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Alternategfx)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("alternategfx");
-            entity.Property(e => e.AnyaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Autobelt)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("autobelt");
@@ -2599,23 +2015,9 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Bitfield1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("bitfield1");
-            entity.Property(e => e.CainMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Calc1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("calc1");
-            entity.Property(e => e.Calc2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("calc2");
-            entity.Property(e => e.Calc3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("calc3");
-            entity.Property(e => e.CharsiMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMin).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Calc1).HasColumnName("calc1");
+            entity.Property(e => e.Calc2).HasColumnName("calc2");
+            entity.Property(e => e.Calc3).HasColumnName("calc3");
             entity.Property(e => e.Code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("code");
@@ -2628,13 +2030,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Cstate2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cstate2");
-            entity.Property(e => e.Diablocloneweight)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("diablocloneweight");
-            entity.Property(e => e.DrognanMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMin).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Diablocloneweight).HasColumnName("diablocloneweight");
             entity.Property(e => e.Dropsfxframe).HasColumnName("dropsfxframe");
             entity.Property(e => e.Dropsound)
                 .HasColumnType("MEDIUMTEXT")
@@ -2642,20 +2038,10 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Durwarning)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("durwarning");
-            entity.Property(e => e.ElzixMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Flippyfile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("flippyfile");
-            entity.Property(e => e.GambleCost)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("gamble_cost");
+            entity.Property(e => e.GambleCost).HasColumnName("gamble_cost");
             entity.Property(e => e.Gemapplytype)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("gemapplytype");
@@ -2665,39 +2051,17 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Gemsockets)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("gemsockets");
-            entity.Property(e => e.GheedMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Hasinv)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("hasinv");
             entity.Property(e => e.HellUpgrade).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.InvTrans).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Invfile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("invfile");
             entity.Property(e => e.Invheight).HasColumnName("invheight");
             entity.Property(e => e.Invwidth).HasColumnName("invwidth");
-            entity.Property(e => e.JamellaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Len)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("len");
+            entity.Property(e => e.Len).HasColumnName("len");
             entity.Property(e => e.Level)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("level");
@@ -2707,63 +2071,35 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Lightradius)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("lightradius");
-            entity.Property(e => e.LysanderMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Maxdam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("maxdam");
+            entity.Property(e => e.Maxdam).HasColumnName("maxdam");
             entity.Property(e => e.Maxstack)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("maxstack");
-            entity.Property(e => e.Mindam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mindam");
+            entity.Property(e => e.Mindam).HasColumnName("mindam");
             entity.Property(e => e.Minstack)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("minstack");
             entity.Property(e => e.Missiletype)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("missiletype");
-            entity.Property(e => e.Multibuy)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("multibuy");
+            entity.Property(e => e.Multibuy).HasColumnName("multibuy");
             entity.Property(e => e.Name)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("name");
-            entity.Property(e => e.Nameable).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Namestr)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("namestr");
             entity.Property(e => e.NightmareUpgrade).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Nodurability).HasColumnName("nodurability");
-            entity.Property(e => e.OrmusMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.PSpell).HasColumnName("pSpell");
-            entity.Property(e => e.PermStoreItem).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Qntwarning)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("qntwarning");
-            entity.Property(e => e.Quest)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("quest");
-            entity.Property(e => e.Questdiffcheck)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questdiffcheck");
+            entity.Property(e => e.Quest).HasColumnName("quest");
+            entity.Property(e => e.Questdiffcheck).HasColumnName("questdiffcheck");
             entity.Property(e => e.Rarity).HasColumnName("rarity");
-            entity.Property(e => e.Reqdex)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("reqdex");
-            entity.Property(e => e.Reqstr)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("reqstr");
+            entity.Property(e => e.Reqdex).HasColumnName("reqdex");
+            entity.Property(e => e.Reqstr).HasColumnName("reqstr");
             entity.Property(e => e.ShowLevel).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.SkipName).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Spawnable).HasColumnName("spawnable");
@@ -2773,15 +2109,9 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Speed)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("speed");
-            entity.Property(e => e.Spelldesc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("spelldesc");
-            entity.Property(e => e.Spelldesccalc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("spelldesccalc");
-            entity.Property(e => e.Spelldesccolor)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("spelldesccolor");
+            entity.Property(e => e.Spelldesc).HasColumnName("spelldesc");
+            entity.Property(e => e.Spelldesccalc).HasColumnName("spelldesccalc");
+            entity.Property(e => e.Spelldesccolor).HasColumnName("spelldesccolor");
             entity.Property(e => e.Spelldescstr)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("spelldescstr");
@@ -2798,18 +2128,12 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Stat2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("stat2");
-            entity.Property(e => e.Stat3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("stat3");
+            entity.Property(e => e.Stat3).HasColumnName("stat3");
             entity.Property(e => e.State)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("state");
-            entity.Property(e => e.TmogMax)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("TMogMax");
-            entity.Property(e => e.TmogMin)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("TMogMin");
+            entity.Property(e => e.TmogMax).HasColumnName("TMogMax");
+            entity.Property(e => e.TmogMin).HasColumnName("TMogMin");
             entity.Property(e => e.TmogType)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("TMogType");
@@ -2862,32 +2186,17 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("missiles");
 
-            entity.Property(e => e.Accel).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Activate).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlwaysExplode).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Animrate).HasColumnName("animrate");
-            entity.Property(e => e.ApplyMastery).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CHitPar1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cHitPar1");
-            entity.Property(e => e.CHitPar2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cHitPar2");
-            entity.Property(e => e.CHitPar3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cHitPar3");
-            entity.Property(e => e.CanDestroy).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.CHitPar1).HasColumnName("cHitPar1");
+            entity.Property(e => e.CHitPar2).HasColumnName("cHitPar2");
+            entity.Property(e => e.CHitPar3).HasColumnName("cHitPar3");
             entity.Property(e => e.CelFile).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ChitCalc1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("CHitCalc1");
+            entity.Property(e => e.ChitCalc1).HasColumnName("CHitCalc1");
             entity.Property(e => e.ClientCalc1Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("client_calc_1_desc");
-            entity.Property(e => e.ClientCol).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ClientHitCalc1Desc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("client_hit_calc1_desc");
+            entity.Property(e => e.ClientHitCalc1Desc).HasColumnName("client_hit_calc1_desc");
             entity.Property(e => e.ClientHitParam1Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("client_hit_param1_desc");
@@ -2912,30 +2221,16 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.ClientParam5Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("client_param5_desc");
-            entity.Property(e => e.ClientSend).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.CltCalc1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.CltHitSubMissile1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.CltHitSubMissile2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.CltHitSubMissile3).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.CltHitSubMissile4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CltParam1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CltParam2).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CltParam3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CltParam4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CltParam5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CltSrcTown).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.CltSubMissile1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.CltSubMissile2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.CltSubMissile3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CollideFriend).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CollideKill).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Collision).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DParam1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dParam1");
-            entity.Property(e => e.DParam2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dParam2");
+            entity.Property(e => e.DParam1).HasColumnName("dParam1");
+            entity.Property(e => e.DParam2).HasColumnName("dParam2");
             entity.Property(e => e.DamageCalc1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("damage_calc_1");
@@ -2945,153 +2240,66 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.DamageParam2Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("damage_param2_desc");
-            entity.Property(e => e.DamageRate).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.DmgCalc1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DmgSymPerCalc).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.EdmgSymPerCalc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("EDmgSymPerCalc");
-            entity.Property(e => e.Elen)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ELen");
-            entity.Property(e => e.ElevLen1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ELevLen1");
-            entity.Property(e => e.ElevLen2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ELevLen2");
-            entity.Property(e => e.ElevLen3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ELevLen3");
-            entity.Property(e => e.Emax)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMax");
-            entity.Property(e => e.Emin)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMin");
+            entity.Property(e => e.Elen).HasColumnName("ELen");
+            entity.Property(e => e.ElevLen1).HasColumnName("ELevLen1");
+            entity.Property(e => e.ElevLen2).HasColumnName("ELevLen2");
+            entity.Property(e => e.ElevLen3).HasColumnName("ELevLen3");
+            entity.Property(e => e.Emax).HasColumnName("EMax");
+            entity.Property(e => e.Emin).HasColumnName("EMin");
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
             entity.Property(e => e.Etype)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("EType");
-            entity.Property(e => e.Explosion).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ExplosionMissile).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Flicker).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GetHit).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Half2Hsrc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("Half2HSrc");
-            entity.Property(e => e.HitClass).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HitFlags).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Half2Hsrc).HasColumnName("Half2HSrc");
             entity.Property(e => e.HitSound).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.HitSubMissile1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HitSubMissile2).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HitSubMissile3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HitSubMissile4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Holy).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.InitSteps).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.KnockBack).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LevRange).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Light).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LocalBlood).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxDamage).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxElev1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MaxELev1");
-            entity.Property(e => e.MaxElev2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MaxELev2");
-            entity.Property(e => e.MaxElev3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MaxELev3");
-            entity.Property(e => e.MaxElev4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MaxELev4");
-            entity.Property(e => e.MaxElev5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MaxELev5");
-            entity.Property(e => e.MaxLevDam1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam2).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinDamage).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinElev1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MinELev1");
-            entity.Property(e => e.MinElev2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MinELev2");
-            entity.Property(e => e.MinElev3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MinELev3");
-            entity.Property(e => e.MinElev4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MinELev4");
-            entity.Property(e => e.MinElev5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("MinELev5");
-            entity.Property(e => e.MinLevDam1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam2).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam5).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.MaxElev1).HasColumnName("MaxELev1");
+            entity.Property(e => e.MaxElev2).HasColumnName("MaxELev2");
+            entity.Property(e => e.MaxElev3).HasColumnName("MaxELev3");
+            entity.Property(e => e.MaxElev4).HasColumnName("MaxELev4");
+            entity.Property(e => e.MaxElev5).HasColumnName("MaxELev5");
+            entity.Property(e => e.MinElev1).HasColumnName("MinELev1");
+            entity.Property(e => e.MinElev2).HasColumnName("MinELev2");
+            entity.Property(e => e.MinElev3).HasColumnName("MinELev3");
+            entity.Property(e => e.MinElev4).HasColumnName("MinELev4");
+            entity.Property(e => e.MinElev5).HasColumnName("MinELev5");
             entity.Property(e => e.Missile1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Missile");
-            entity.Property(e => e.MissileSkill).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.NextDelay).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.NextHit).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.NoMultiShot).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.NoUniqueMod).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.PCltDoFunc).HasColumnName("pCltDoFunc");
-            entity.Property(e => e.PCltHitFunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("pCltHitFunc");
-            entity.Property(e => e.PSrvDmgFunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("pSrvDmgFunc");
+            entity.Property(e => e.PCltHitFunc).HasColumnName("pCltHitFunc");
+            entity.Property(e => e.PSrvDmgFunc).HasColumnName("pSrvDmgFunc");
             entity.Property(e => e.PSrvDoFunc).HasColumnName("pSrvDoFunc");
-            entity.Property(e => e.PSrvHitFunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("pSrvHitFunc");
-            entity.Property(e => e.Param1).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.PSrvHitFunc).HasColumnName("pSrvHitFunc");
             entity.Property(e => e.Param1Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("param1_desc");
-            entity.Property(e => e.Param2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param2Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("param2_desc");
-            entity.Property(e => e.Param3).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param3Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("param3_desc");
-            entity.Property(e => e.Param4).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param4Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("param4_desc");
-            entity.Property(e => e.Param5).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param5Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("param5_desc");
-            entity.Property(e => e.Pierce).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ProgOverlay).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ProgSound).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.RandStart).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ResultFlags).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ReturnFire).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SHitPar1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("sHitPar1");
-            entity.Property(e => e.SHitPar2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("sHitPar2");
-            entity.Property(e => e.SHitPar3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("sHitPar3");
+            entity.Property(e => e.SHitPar1).HasColumnName("sHitPar1");
+            entity.Property(e => e.SHitPar2).HasColumnName("sHitPar2");
+            entity.Property(e => e.SHitPar3).HasColumnName("sHitPar3");
             entity.Property(e => e.ServerHitCalc1Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("server_hit_calc_1_desc");
@@ -3104,37 +2312,18 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.ServerHitParam3Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("server_hit_param3_desc");
-            entity.Property(e => e.ShitCalc1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("SHitCalc1");
+            entity.Property(e => e.ShitCalc1).HasColumnName("SHitCalc1");
             entity.Property(e => e.Skill).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SoftHit).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SrcDamage).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SrcMissDmg).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SrcTown).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.SrvCalc1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.SrvCalc1Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("srv_calc_1_desc");
-            entity.Property(e => e.SubLoop).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.SubMissile1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.SubMissile2).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SubMissile3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SubStart).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SubStop).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ToHit).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Town).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.TravelSound).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.VelLev).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Xoffset)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("xoffset");
-            entity.Property(e => e.Yoffset)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("yoffset");
-            entity.Property(e => e.Zoffset)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("zoffset");
+            entity.Property(e => e.Xoffset).HasColumnName("xoffset");
+            entity.Property(e => e.Yoffset).HasColumnName("yoffset");
+            entity.Property(e => e.Zoffset).HasColumnName("zoffset");
         });
 
         modelBuilder.Entity<Npc>(entity =>
@@ -3151,33 +2340,17 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("npc");
             entity.Property(e => e.QuestbuymultA).HasColumnName("questbuymult_A");
-            entity.Property(e => e.QuestbuymultB)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questbuymult_B");
-            entity.Property(e => e.QuestbuymultC)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questbuymult_C");
+            entity.Property(e => e.QuestbuymultB).HasColumnName("questbuymult_B");
+            entity.Property(e => e.QuestbuymultC).HasColumnName("questbuymult_C");
             entity.Property(e => e.QuestflagA).HasColumnName("questflag_A");
-            entity.Property(e => e.QuestflagB)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questflag_B");
-            entity.Property(e => e.QuestflagC)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questflag_C");
+            entity.Property(e => e.QuestflagB).HasColumnName("questflag_B");
+            entity.Property(e => e.QuestflagC).HasColumnName("questflag_C");
             entity.Property(e => e.QuestrepmultA).HasColumnName("questrepmult_A");
-            entity.Property(e => e.QuestrepmultB)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questrepmult_B");
-            entity.Property(e => e.QuestrepmultC)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questrepmult_C");
+            entity.Property(e => e.QuestrepmultB).HasColumnName("questrepmult_B");
+            entity.Property(e => e.QuestrepmultC).HasColumnName("questrepmult_C");
             entity.Property(e => e.QuestsellmultA).HasColumnName("questsellmult_A");
-            entity.Property(e => e.QuestsellmultB)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questsellmult_B");
-            entity.Property(e => e.QuestsellmultC)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questsellmult_C");
+            entity.Property(e => e.QuestsellmultB).HasColumnName("questsellmult_B");
+            entity.Property(e => e.QuestsellmultC).HasColumnName("questsellmult_C");
             entity.Property(e => e.RepMult).HasColumnName("rep_mult");
             entity.Property(e => e.SellMult).HasColumnName("sell_mult");
         });
@@ -3225,22 +2398,12 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("basemax");
             entity.Property(e => e.Drawhp).HasColumnName("drawhp");
-            entity.Property(e => e.Group)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("group");
+            entity.Property(e => e.Group).HasColumnName("group");
             entity.Property(e => e.Icontype).HasColumnName("icontype");
-            entity.Property(e => e.Mclass1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mclass1");
-            entity.Property(e => e.Mclass2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mclass2");
-            entity.Property(e => e.Mclass3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mclass3");
-            entity.Property(e => e.Mclass4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mclass4");
+            entity.Property(e => e.Mclass1).HasColumnName("mclass1");
+            entity.Property(e => e.Mclass2).HasColumnName("mclass2");
+            entity.Property(e => e.Mclass3).HasColumnName("mclass3");
+            entity.Property(e => e.Mclass4).HasColumnName("mclass4");
             entity.Property(e => e.Micon1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("micon1");
@@ -3260,9 +2423,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.PetType1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("pet_type");
-            entity.Property(e => e.Range)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("range");
+            entity.Property(e => e.Range).HasColumnName("range");
             entity.Property(e => e.Unsummon).HasColumnName("unsummon");
             entity.Property(e => e.Warp).HasColumnName("warp");
         });
@@ -3313,49 +2474,23 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
             entity.Property(e => e.Func1).HasColumnName("func1");
-            entity.Property(e => e.Func2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("func2");
-            entity.Property(e => e.Func3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("func3");
-            entity.Property(e => e.Func4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("func4");
-            entity.Property(e => e.Func5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("func5");
-            entity.Property(e => e.Func6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("func6");
-            entity.Property(e => e.Func7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("func7");
+            entity.Property(e => e.Func2).HasColumnName("func2");
+            entity.Property(e => e.Func3).HasColumnName("func3");
+            entity.Property(e => e.Func4).HasColumnName("func4");
+            entity.Property(e => e.Func5).HasColumnName("func5");
+            entity.Property(e => e.Func6).HasColumnName("func6");
+            entity.Property(e => e.Func7).HasColumnName("func7");
             entity.Property(e => e.Max).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Min).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Notes).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Parameter).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Set1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("set1");
-            entity.Property(e => e.Set2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("set2");
-            entity.Property(e => e.Set3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("set3");
-            entity.Property(e => e.Set4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("set4");
-            entity.Property(e => e.Set5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("set5");
-            entity.Property(e => e.Set6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("set6");
-            entity.Property(e => e.Set7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("set7");
+            entity.Property(e => e.Set1).HasColumnName("set1");
+            entity.Property(e => e.Set2).HasColumnName("set2");
+            entity.Property(e => e.Set3).HasColumnName("set3");
+            entity.Property(e => e.Set4).HasColumnName("set4");
+            entity.Property(e => e.Set5).HasColumnName("set5");
+            entity.Property(e => e.Set6).HasColumnName("set6");
+            entity.Property(e => e.Set7).HasColumnName("set7");
             entity.Property(e => e.Stat1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("stat1");
@@ -3378,27 +2513,13 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("stat7");
             entity.Property(e => e.Tooltip).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Val1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("val1");
-            entity.Property(e => e.Val2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("val2");
-            entity.Property(e => e.Val3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("val3");
-            entity.Property(e => e.Val4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("val4");
-            entity.Property(e => e.Val5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("val5");
-            entity.Property(e => e.Val6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("val6");
-            entity.Property(e => e.Val7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("val7");
+            entity.Property(e => e.Val1).HasColumnName("val1");
+            entity.Property(e => e.Val2).HasColumnName("val2");
+            entity.Property(e => e.Val3).HasColumnName("val3");
+            entity.Property(e => e.Val4).HasColumnName("val4");
+            entity.Property(e => e.Val5).HasColumnName("val5");
+            entity.Property(e => e.Val6).HasColumnName("val6");
+            entity.Property(e => e.Val7).HasColumnName("val7");
         });
 
         modelBuilder.Entity<Qualityitem>(entity =>
@@ -3451,18 +2572,10 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("rareprefix");
 
-            entity.Property(e => e.Etype1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype1");
-            entity.Property(e => e.Etype2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype2");
-            entity.Property(e => e.Etype3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype3");
-            entity.Property(e => e.Etype4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype4");
+            entity.Property(e => e.Etype1).HasColumnName("etype1");
+            entity.Property(e => e.Etype2).HasColumnName("etype2");
+            entity.Property(e => e.Etype3).HasColumnName("etype3");
+            entity.Property(e => e.Etype4).HasColumnName("etype4");
             entity.Property(e => e.Itype1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itype1");
@@ -3478,12 +2591,8 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Itype5)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itype5");
-            entity.Property(e => e.Itype6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype6");
-            entity.Property(e => e.Itype7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype7");
+            entity.Property(e => e.Itype6).HasColumnName("itype6");
+            entity.Property(e => e.Itype7).HasColumnName("itype7");
             entity.Property(e => e.Name)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("name");
@@ -3498,18 +2607,10 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("raresuffix");
 
-            entity.Property(e => e.Etype1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype1");
-            entity.Property(e => e.Etype2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype2");
-            entity.Property(e => e.Etype3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype3");
-            entity.Property(e => e.Etype4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype4");
+            entity.Property(e => e.Etype1).HasColumnName("etype1");
+            entity.Property(e => e.Etype2).HasColumnName("etype2");
+            entity.Property(e => e.Etype3).HasColumnName("etype3");
+            entity.Property(e => e.Etype4).HasColumnName("etype4");
             entity.Property(e => e.Itype1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itype1");
@@ -3528,9 +2629,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Itype6)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itype6");
-            entity.Property(e => e.Itype7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype7");
+            entity.Property(e => e.Itype7).HasColumnName("itype7");
             entity.Property(e => e.Name)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("name");
@@ -3549,18 +2648,10 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
-            entity.Property(e => e.Etype1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype1");
-            entity.Property(e => e.Etype2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype2");
-            entity.Property(e => e.Etype3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etype3");
-            entity.Property(e => e.FirstLadderSeason)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("firstLadderSeason");
+            entity.Property(e => e.Etype1).HasColumnName("etype1");
+            entity.Property(e => e.Etype2).HasColumnName("etype2");
+            entity.Property(e => e.Etype3).HasColumnName("etype3");
+            entity.Property(e => e.FirstLadderSeason).HasColumnName("firstLadderSeason");
             entity.Property(e => e.Itype1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itype1");
@@ -3570,22 +2661,12 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Itype3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itype3");
-            entity.Property(e => e.Itype4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype4");
-            entity.Property(e => e.Itype5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype5");
-            entity.Property(e => e.Itype6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itype6");
-            entity.Property(e => e.LastLadderSeason)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("lastLadderSeason");
+            entity.Property(e => e.Itype4).HasColumnName("itype4");
+            entity.Property(e => e.Itype5).HasColumnName("itype5");
+            entity.Property(e => e.Itype6).HasColumnName("itype6");
+            entity.Property(e => e.LastLadderSeason).HasColumnName("lastLadderSeason");
             entity.Property(e => e.Name).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.PatchRelease)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("Patch_Release");
+            entity.Property(e => e.PatchRelease).HasColumnName("Patch_Release");
             entity.Property(e => e.Rune1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Rune2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Rune3).HasColumnType("MEDIUMTEXT");
@@ -3621,28 +2702,16 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.T1max2).HasColumnName("T1Max2");
             entity.Property(e => e.T1max3).HasColumnName("T1Max3");
             entity.Property(e => e.T1max4).HasColumnName("T1Max4");
-            entity.Property(e => e.T1max5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("T1Max5");
-            entity.Property(e => e.T1max6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("T1Max6");
-            entity.Property(e => e.T1max7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("T1Max7");
+            entity.Property(e => e.T1max5).HasColumnName("T1Max5");
+            entity.Property(e => e.T1max6).HasColumnName("T1Max6");
+            entity.Property(e => e.T1max7).HasColumnName("T1Max7");
             entity.Property(e => e.T1min1).HasColumnName("T1Min1");
             entity.Property(e => e.T1min2).HasColumnName("T1Min2");
             entity.Property(e => e.T1min3).HasColumnName("T1Min3");
             entity.Property(e => e.T1min4).HasColumnName("T1Min4");
-            entity.Property(e => e.T1min5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("T1Min5");
-            entity.Property(e => e.T1min6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("T1Min6");
-            entity.Property(e => e.T1min7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("T1Min7");
+            entity.Property(e => e.T1min5).HasColumnName("T1Min5");
+            entity.Property(e => e.T1min6).HasColumnName("T1Min6");
+            entity.Property(e => e.T1min7).HasColumnName("T1Min7");
             entity.Property(e => e.T1param1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("T1Param1");
@@ -3704,29 +2773,17 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Fmax3).HasColumnName("FMax3");
             entity.Property(e => e.Fmax4).HasColumnName("FMax4");
             entity.Property(e => e.Fmax5).HasColumnName("FMax5");
-            entity.Property(e => e.Fmax6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("FMax6");
-            entity.Property(e => e.Fmax7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("FMax7");
-            entity.Property(e => e.Fmax8)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("FMax8");
+            entity.Property(e => e.Fmax6).HasColumnName("FMax6");
+            entity.Property(e => e.Fmax7).HasColumnName("FMax7");
+            entity.Property(e => e.Fmax8).HasColumnName("FMax8");
             entity.Property(e => e.Fmin1).HasColumnName("FMin1");
             entity.Property(e => e.Fmin2).HasColumnName("FMin2");
             entity.Property(e => e.Fmin3).HasColumnName("FMin3");
             entity.Property(e => e.Fmin4).HasColumnName("FMin4");
             entity.Property(e => e.Fmin5).HasColumnName("FMin5");
-            entity.Property(e => e.Fmin6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("FMin6");
-            entity.Property(e => e.Fmin7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("FMin7");
-            entity.Property(e => e.Fmin8)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("FMin8");
+            entity.Property(e => e.Fmin6).HasColumnName("FMin6");
+            entity.Property(e => e.Fmin7).HasColumnName("FMin7");
+            entity.Property(e => e.Fmin8).HasColumnName("FMin8");
             entity.Property(e => e.Fparam1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("FParam1");
@@ -3748,9 +2805,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Fparam7)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("FParam7");
-            entity.Property(e => e.Fparam8)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("FParam8");
+            entity.Property(e => e.Fparam8).HasColumnName("FParam8");
             entity.Property(e => e.Index)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("index");
@@ -3778,49 +2833,23 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Pcode5a)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("PCode5a");
-            entity.Property(e => e.Pcode5b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PCode5b");
+            entity.Property(e => e.Pcode5b).HasColumnName("PCode5b");
             entity.Property(e => e.Pmax2a).HasColumnName("PMax2a");
-            entity.Property(e => e.Pmax2b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMax2b");
+            entity.Property(e => e.Pmax2b).HasColumnName("PMax2b");
             entity.Property(e => e.Pmax3a).HasColumnName("PMax3a");
-            entity.Property(e => e.Pmax3b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMax3b");
-            entity.Property(e => e.Pmax4a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMax4a");
-            entity.Property(e => e.Pmax4b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMax4b");
-            entity.Property(e => e.Pmax5a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMax5a");
-            entity.Property(e => e.Pmax5b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMax5b");
+            entity.Property(e => e.Pmax3b).HasColumnName("PMax3b");
+            entity.Property(e => e.Pmax4a).HasColumnName("PMax4a");
+            entity.Property(e => e.Pmax4b).HasColumnName("PMax4b");
+            entity.Property(e => e.Pmax5a).HasColumnName("PMax5a");
+            entity.Property(e => e.Pmax5b).HasColumnName("PMax5b");
             entity.Property(e => e.Pmin2a).HasColumnName("PMin2a");
-            entity.Property(e => e.Pmin2b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMin2b");
+            entity.Property(e => e.Pmin2b).HasColumnName("PMin2b");
             entity.Property(e => e.Pmin3a).HasColumnName("PMin3a");
-            entity.Property(e => e.Pmin3b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMin3b");
-            entity.Property(e => e.Pmin4a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMin4a");
-            entity.Property(e => e.Pmin4b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMin4b");
-            entity.Property(e => e.Pmin5a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMin5a");
-            entity.Property(e => e.Pmin5b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("PMin5b");
+            entity.Property(e => e.Pmin3b).HasColumnName("PMin3b");
+            entity.Property(e => e.Pmin4a).HasColumnName("PMin4a");
+            entity.Property(e => e.Pmin4b).HasColumnName("PMin4b");
+            entity.Property(e => e.Pmin5a).HasColumnName("PMin5a");
+            entity.Property(e => e.Pmin5b).HasColumnName("PMin5b");
             entity.Property(e => e.Pparam2a)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("PParam2a");
@@ -3845,9 +2874,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Pparam5b)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("PParam5b");
-            entity.Property(e => e.Version)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("version");
+            entity.Property(e => e.Version).HasColumnName("version");
         });
 
         modelBuilder.Entity<Setitem>(entity =>
@@ -3857,66 +2884,26 @@ public partial class DatabaseContext : DbContext
                 .ToTable("setitems");
 
             entity.Property(e => e.AddFunc).HasColumnName("add_func");
-            entity.Property(e => e.Amax1a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax1a");
-            entity.Property(e => e.Amax1b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax1b");
-            entity.Property(e => e.Amax2a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax2a");
-            entity.Property(e => e.Amax2b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax2b");
-            entity.Property(e => e.Amax3a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax3a");
-            entity.Property(e => e.Amax3b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax3b");
-            entity.Property(e => e.Amax4a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax4a");
-            entity.Property(e => e.Amax4b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax4b");
-            entity.Property(e => e.Amax5a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax5a");
-            entity.Property(e => e.Amax5b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amax5b");
-            entity.Property(e => e.Amin1a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin1a");
-            entity.Property(e => e.Amin1b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin1b");
-            entity.Property(e => e.Amin2a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin2a");
-            entity.Property(e => e.Amin2b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin2b");
-            entity.Property(e => e.Amin3a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin3a");
-            entity.Property(e => e.Amin3b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin3b");
-            entity.Property(e => e.Amin4a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin4a");
-            entity.Property(e => e.Amin4b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin4b");
-            entity.Property(e => e.Amin5a)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin5a");
-            entity.Property(e => e.Amin5b)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("amin5b");
+            entity.Property(e => e.Amax1a).HasColumnName("amax1a");
+            entity.Property(e => e.Amax1b).HasColumnName("amax1b");
+            entity.Property(e => e.Amax2a).HasColumnName("amax2a");
+            entity.Property(e => e.Amax2b).HasColumnName("amax2b");
+            entity.Property(e => e.Amax3a).HasColumnName("amax3a");
+            entity.Property(e => e.Amax3b).HasColumnName("amax3b");
+            entity.Property(e => e.Amax4a).HasColumnName("amax4a");
+            entity.Property(e => e.Amax4b).HasColumnName("amax4b");
+            entity.Property(e => e.Amax5a).HasColumnName("amax5a");
+            entity.Property(e => e.Amax5b).HasColumnName("amax5b");
+            entity.Property(e => e.Amin1a).HasColumnName("amin1a");
+            entity.Property(e => e.Amin1b).HasColumnName("amin1b");
+            entity.Property(e => e.Amin2a).HasColumnName("amin2a");
+            entity.Property(e => e.Amin2b).HasColumnName("amin2b");
+            entity.Property(e => e.Amin3a).HasColumnName("amin3a");
+            entity.Property(e => e.Amin3b).HasColumnName("amin3b");
+            entity.Property(e => e.Amin4a).HasColumnName("amin4a");
+            entity.Property(e => e.Amin4b).HasColumnName("amin4b");
+            entity.Property(e => e.Amin5a).HasColumnName("amin5a");
+            entity.Property(e => e.Amin5b).HasColumnName("amin5b");
             entity.Property(e => e.Apar1a)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("apar1a");
@@ -3982,28 +2969,18 @@ public partial class DatabaseContext : DbContext
                 .HasColumnName("chrtransform");
             entity.Property(e => e.CostAdd).HasColumnName("cost_add");
             entity.Property(e => e.CostMult).HasColumnName("cost_mult");
-            entity.Property(e => e.Diablocloneweight)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("diablocloneweight");
-            entity.Property(e => e.Dropsfxframe)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dropsfxframe");
-            entity.Property(e => e.Dropsound)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dropsound");
+            entity.Property(e => e.Diablocloneweight).HasColumnName("diablocloneweight");
+            entity.Property(e => e.Dropsfxframe).HasColumnName("dropsfxframe");
+            entity.Property(e => e.Dropsound).HasColumnName("dropsound");
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
-            entity.Property(e => e.Flippyfile)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("flippyfile");
+            entity.Property(e => e.Flippyfile).HasColumnName("flippyfile");
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.Index)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("index");
-            entity.Property(e => e.Invfile)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("invfile");
+            entity.Property(e => e.Invfile).HasColumnName("invfile");
             entity.Property(e => e.Invtransform)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("invtransform");
@@ -4015,46 +2992,22 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.LvlReq).HasColumnName("lvl_req");
             entity.Property(e => e.Max1).HasColumnName("max1");
             entity.Property(e => e.Max2).HasColumnName("max2");
-            entity.Property(e => e.Max3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max3");
+            entity.Property(e => e.Max3).HasColumnName("max3");
             entity.Property(e => e.Max4).HasColumnName("max4");
-            entity.Property(e => e.Max5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max5");
-            entity.Property(e => e.Max6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max6");
-            entity.Property(e => e.Max7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max7");
-            entity.Property(e => e.Max8)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max8");
-            entity.Property(e => e.Max9)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max9");
+            entity.Property(e => e.Max5).HasColumnName("max5");
+            entity.Property(e => e.Max6).HasColumnName("max6");
+            entity.Property(e => e.Max7).HasColumnName("max7");
+            entity.Property(e => e.Max8).HasColumnName("max8");
+            entity.Property(e => e.Max9).HasColumnName("max9");
             entity.Property(e => e.Min1).HasColumnName("min1");
             entity.Property(e => e.Min2).HasColumnName("min2");
-            entity.Property(e => e.Min3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min3");
+            entity.Property(e => e.Min3).HasColumnName("min3");
             entity.Property(e => e.Min4).HasColumnName("min4");
-            entity.Property(e => e.Min5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min5");
-            entity.Property(e => e.Min6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min6");
-            entity.Property(e => e.Min7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min7");
-            entity.Property(e => e.Min8)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min8");
-            entity.Property(e => e.Min9)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min9");
+            entity.Property(e => e.Min5).HasColumnName("min5");
+            entity.Property(e => e.Min6).HasColumnName("min6");
+            entity.Property(e => e.Min7).HasColumnName("min7");
+            entity.Property(e => e.Min8).HasColumnName("min8");
+            entity.Property(e => e.Min9).HasColumnName("min9");
             entity.Property(e => e.Par1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("par1");
@@ -4113,9 +3066,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Set)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("set");
-            entity.Property(e => e.Usesound)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("usesound");
+            entity.Property(e => e.Usesound).HasColumnName("usesound");
         });
 
         modelBuilder.Entity<Shrine>(entity =>
@@ -4124,10 +3075,7 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("shrines");
 
-            entity.Property(e => e.Arg1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DurationInFrames)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("Duration_in_frames");
+            entity.Property(e => e.DurationInFrames).HasColumnName("Duration_in_frames");
             entity.Property(e => e.Effect).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Effectclass).HasColumnName("effectclass");
             entity.Property(e => e.Name).HasColumnType("MEDIUMTEXT");
@@ -4146,25 +3094,16 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("skills");
 
-            entity.Property(e => e.Aibonus)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("aibonus");
-            entity.Property(e => e.Aitype)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("aitype");
-            entity.Property(e => e.Alwayshit)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("alwayshit");
+            entity.Property(e => e.Aibonus).HasColumnName("aibonus");
+            entity.Property(e => e.Aitype).HasColumnName("aitype");
+            entity.Property(e => e.Alwayshit).HasColumnName("alwayshit");
             entity.Property(e => e.Anim)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("anim");
-            entity.Property(e => e.AttackNoMana).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Attackrank)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("attackrank");
-            entity.Property(e => e.Aura)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("aura");
+            entity.Property(e => e.Aura).HasColumnName("aura");
             entity.Property(e => e.Auraevent1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("auraevent1");
@@ -4174,18 +3113,10 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Auraevent3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("auraevent3");
-            entity.Property(e => e.Auraeventfunc1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("auraeventfunc1");
-            entity.Property(e => e.Auraeventfunc2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("auraeventfunc2");
-            entity.Property(e => e.Auraeventfunc3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("auraeventfunc3");
-            entity.Property(e => e.Aurafilter)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("aurafilter");
+            entity.Property(e => e.Auraeventfunc1).HasColumnName("auraeventfunc1");
+            entity.Property(e => e.Auraeventfunc2).HasColumnName("auraeventfunc2");
+            entity.Property(e => e.Auraeventfunc3).HasColumnName("auraeventfunc3");
+            entity.Property(e => e.Aurafilter).HasColumnName("aurafilter");
             entity.Property(e => e.Auralencalc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("auralencalc");
@@ -4264,40 +3195,29 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Calc5Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("calc5_desc");
-            entity.Property(e => e.Calc6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("calc6");
-            entity.Property(e => e.Calc6Desc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("calc6_desc");
+            entity.Property(e => e.Calc6).HasColumnName("calc6");
+            entity.Property(e => e.Calc6Desc).HasColumnName("calc6_desc");
             entity.Property(e => e.Castoverlay)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("castoverlay");
             entity.Property(e => e.Charclass)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("charclass");
-            entity.Property(e => e.ClearSelectedOnHold).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Cltcalc1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cltcalc1");
             entity.Property(e => e.Cltcalc1Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cltcalc1_desc");
-            entity.Property(e => e.Cltcalc2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltcalc2");
+            entity.Property(e => e.Cltcalc2).HasColumnName("cltcalc2");
             entity.Property(e => e.Cltcalc2Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cltcalc2_desc");
-            entity.Property(e => e.Cltcalc3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltcalc3");
+            entity.Property(e => e.Cltcalc3).HasColumnName("cltcalc3");
             entity.Property(e => e.Cltcalc3Desc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cltcalc3_desc");
-            entity.Property(e => e.Cltdofunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltdofunc");
+            entity.Property(e => e.Cltdofunc).HasColumnName("cltdofunc");
             entity.Property(e => e.Cltmissile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cltmissile");
@@ -4319,27 +3239,14 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Cltoverlayb)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cltoverlayb");
-            entity.Property(e => e.Cltprgfunc1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltprgfunc1");
-            entity.Property(e => e.Cltprgfunc2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltprgfunc2");
-            entity.Property(e => e.Cltprgfunc3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltprgfunc3");
-            entity.Property(e => e.Cltstfunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltstfunc");
-            entity.Property(e => e.Cltstopfunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltstopfunc");
-            entity.Property(e => e.ContinueCastUnselected).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Cltprgfunc1).HasColumnName("cltprgfunc1");
+            entity.Property(e => e.Cltprgfunc2).HasColumnName("cltprgfunc2");
+            entity.Property(e => e.Cltprgfunc3).HasColumnName("cltprgfunc3");
+            entity.Property(e => e.Cltstfunc).HasColumnName("cltstfunc");
+            entity.Property(e => e.Cltstopfunc).HasColumnName("cltstopfunc");
             entity.Property(e => e.CostAdd).HasColumnName("cost_add");
             entity.Property(e => e.CostMult).HasColumnName("cost_mult");
-            entity.Property(e => e.Decquant)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("decquant");
+            entity.Property(e => e.Decquant).HasColumnName("decquant");
             entity.Property(e => e.DmgSymPerCalc).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Dosound)
                 .HasColumnType("MEDIUMTEXT")
@@ -4350,63 +3257,29 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.DosoundB)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dosound_b");
-            entity.Property(e => e.Durability)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("durability");
+            entity.Property(e => e.Durability).HasColumnName("durability");
             entity.Property(e => e.EdmgSymPerCalc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("EDmgSymPerCalc");
-            entity.Property(e => e.Elen)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ELen");
+            entity.Property(e => e.Elen).HasColumnName("ELen");
             entity.Property(e => e.ElenSymPerCalc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("ELenSymPerCalc");
-            entity.Property(e => e.ElevLen1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ELevLen1");
-            entity.Property(e => e.ElevLen2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ELevLen2");
-            entity.Property(e => e.ElevLen3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("ELevLen3");
-            entity.Property(e => e.Emax)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMax");
-            entity.Property(e => e.EmaxLev1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMaxLev1");
-            entity.Property(e => e.EmaxLev2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMaxLev2");
-            entity.Property(e => e.EmaxLev3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMaxLev3");
-            entity.Property(e => e.EmaxLev4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMaxLev4");
-            entity.Property(e => e.EmaxLev5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMaxLev5");
-            entity.Property(e => e.Emin)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMin");
-            entity.Property(e => e.EminLev1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMinLev1");
-            entity.Property(e => e.EminLev2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMinLev2");
-            entity.Property(e => e.EminLev3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMinLev3");
-            entity.Property(e => e.EminLev4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMinLev4");
-            entity.Property(e => e.EminLev5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("EMinLev5");
+            entity.Property(e => e.ElevLen1).HasColumnName("ELevLen1");
+            entity.Property(e => e.ElevLen2).HasColumnName("ELevLen2");
+            entity.Property(e => e.ElevLen3).HasColumnName("ELevLen3");
+            entity.Property(e => e.Emax).HasColumnName("EMax");
+            entity.Property(e => e.EmaxLev1).HasColumnName("EMaxLev1");
+            entity.Property(e => e.EmaxLev2).HasColumnName("EMaxLev2");
+            entity.Property(e => e.EmaxLev3).HasColumnName("EMaxLev3");
+            entity.Property(e => e.EmaxLev4).HasColumnName("EMaxLev4");
+            entity.Property(e => e.EmaxLev5).HasColumnName("EMaxLev5");
+            entity.Property(e => e.Emin).HasColumnName("EMin");
+            entity.Property(e => e.EminLev1).HasColumnName("EMinLev1");
+            entity.Property(e => e.EminLev2).HasColumnName("EMinLev2");
+            entity.Property(e => e.EminLev3).HasColumnName("EMinLev3");
+            entity.Property(e => e.EminLev4).HasColumnName("EMinLev4");
+            entity.Property(e => e.EminLev5).HasColumnName("EMinLev5");
             entity.Property(e => e.Enhanceable).HasColumnName("enhanceable");
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
@@ -4417,147 +3290,78 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Etypea1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("etypea1");
-            entity.Property(e => e.Etypea2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etypea2");
-            entity.Property(e => e.Etypeb1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etypeb1");
-            entity.Property(e => e.Etypeb2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("etypeb2");
-            entity.Property(e => e.Finishing)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("finishing");
-            entity.Property(e => e.Globaldelay)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("globaldelay");
-            entity.Property(e => e.HitClass).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HitFlags).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Immediate)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("immediate");
-            entity.Property(e => e.InTown).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Etypea2).HasColumnName("etypea2");
+            entity.Property(e => e.Etypeb1).HasColumnName("etypeb1");
+            entity.Property(e => e.Etypeb2).HasColumnName("etypeb2");
+            entity.Property(e => e.Finishing).HasColumnName("finishing");
+            entity.Property(e => e.Globaldelay).HasColumnName("globaldelay");
+            entity.Property(e => e.Immediate).HasColumnName("immediate");
             entity.Property(e => e.Interrupt).HasColumnName("interrupt");
             entity.Property(e => e.ItemCastOverlay).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ItemCastSound).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemCheckStart).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemCltCheckStart).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemCltEffect).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemEffect).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemTarget).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemTgtDo).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemUseRestrict).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Itypea1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itypea1");
             entity.Property(e => e.Itypea2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itypea2");
-            entity.Property(e => e.Itypea3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itypea3");
+            entity.Property(e => e.Itypea3).HasColumnName("itypea3");
             entity.Property(e => e.Itypeb1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itypeb1");
-            entity.Property(e => e.Itypeb2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itypeb2");
-            entity.Property(e => e.Itypeb3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("itypeb3");
-            entity.Property(e => e.KeepCursorStateOnKill).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Kick).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Itypeb2).HasColumnName("itypeb2");
+            entity.Property(e => e.Itypeb3).HasColumnName("itypeb3");
             entity.Property(e => e.Leftskill)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("leftskill");
-            entity.Property(e => e.LevToHit).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LineOfSight).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Lob)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("lob");
-            entity.Property(e => e.Localdelay)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("localdelay");
+            entity.Property(e => e.Lob).HasColumnName("lob");
+            entity.Property(e => e.Localdelay).HasColumnName("localdelay");
             entity.Property(e => e.Lvlmana)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("lvlmana");
-            entity.Property(e => e.Mana)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("mana");
+            entity.Property(e => e.Mana).HasColumnName("mana");
             entity.Property(e => e.Manashift).HasColumnName("manashift");
-            entity.Property(e => e.MaxDam).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam2).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MaxLevDam5).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Maxlvl).HasColumnName("maxlvl");
-            entity.Property(e => e.MinDam).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam2).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam3).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MinLevDam5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Minmana)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("minmana");
+            entity.Property(e => e.Minmana).HasColumnName("minmana");
             entity.Property(e => e.Monanim)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("monanim");
-            entity.Property(e => e.Noammo)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("noammo");
-            entity.Property(e => e.Param10).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Noammo).HasColumnName("noammo");
             entity.Property(e => e.Param10Description2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param10_Description2");
-            entity.Property(e => e.Param11).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param11Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param11_Description");
-            entity.Property(e => e.Param12).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Param12Description)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("Param12_Description");
+            entity.Property(e => e.Param12Description).HasColumnName("Param12_Description");
             entity.Property(e => e.Param1Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param1_Description");
-            entity.Property(e => e.Param2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param2Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param2_Description");
-            entity.Property(e => e.Param3).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param3Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param3_Description");
-            entity.Property(e => e.Param4).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param4Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param4_Description");
-            entity.Property(e => e.Param5).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param5Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param5_Description");
-            entity.Property(e => e.Param6).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param6Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param6_Description");
-            entity.Property(e => e.Param7).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param7Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param7_Description");
-            entity.Property(e => e.Param8).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param8Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param8_Description");
-            entity.Property(e => e.Param9).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Param9Description)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Param9_Description");
-            entity.Property(e => e.Passive)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("passive");
+            entity.Property(e => e.Passive).HasColumnName("passive");
             entity.Property(e => e.Passivecalc1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("passivecalc1");
@@ -4591,9 +3395,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Passiveitype)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("passiveitype");
-            entity.Property(e => e.Passivereqweaponcount)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("passivereqweaponcount");
+            entity.Property(e => e.Passivereqweaponcount).HasColumnName("passivereqweaponcount");
             entity.Property(e => e.Passivestat1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("passivestat1");
@@ -4627,12 +3429,8 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Passivestate)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("passivestate");
-            entity.Property(e => e.Perdelay)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("perdelay");
-            entity.Property(e => e.Periodic)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("periodic");
+            entity.Property(e => e.Perdelay).HasColumnName("perdelay");
+            entity.Property(e => e.Periodic).HasColumnName("periodic");
             entity.Property(e => e.Petmax)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("petmax");
@@ -4648,39 +3446,25 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Prgcalc3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("prgcalc3");
-            entity.Property(e => e.Prgchargesconsumed)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("prgchargesconsumed");
+            entity.Property(e => e.Prgchargesconsumed).HasColumnName("prgchargesconsumed");
             entity.Property(e => e.Prgchargestocast)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("prgchargestocast");
-            entity.Property(e => e.Prgdam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("prgdam");
+            entity.Property(e => e.Prgdam).HasColumnName("prgdam");
             entity.Property(e => e.Prgoverlay)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("prgoverlay");
             entity.Property(e => e.Prgsound)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("prgsound");
-            entity.Property(e => e.Prgstack)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("prgstack");
-            entity.Property(e => e.Progressive)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("progressive");
+            entity.Property(e => e.Prgstack).HasColumnName("prgstack");
+            entity.Property(e => e.Progressive).HasColumnName("progressive");
             entity.Property(e => e.Range)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("range");
-            entity.Property(e => e.Repeat)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("repeat");
-            entity.Property(e => e.Reqdex)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("reqdex");
-            entity.Property(e => e.Reqint)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("reqint");
+            entity.Property(e => e.Repeat).HasColumnName("repeat");
+            entity.Property(e => e.Reqdex).HasColumnName("reqdex");
+            entity.Property(e => e.Reqint).HasColumnName("reqint");
             entity.Property(e => e.Reqlevel).HasColumnName("reqlevel");
             entity.Property(e => e.Reqskill1)
                 .HasColumnType("MEDIUMTEXT")
@@ -4688,37 +3472,16 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Reqskill2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("reqskill2");
-            entity.Property(e => e.Reqskill3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("reqskill3");
-            entity.Property(e => e.Reqstr)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("reqstr");
-            entity.Property(e => e.Reqvit)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("reqvit");
-            entity.Property(e => e.Restrict)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("restrict");
-            entity.Property(e => e.ResultFlags).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Reqskill3).HasColumnName("reqskill3");
+            entity.Property(e => e.Reqstr).HasColumnName("reqstr");
+            entity.Property(e => e.Reqvit).HasColumnName("reqvit");
+            entity.Property(e => e.Restrict).HasColumnName("restrict");
             entity.Property(e => e.Rightskill).HasColumnName("rightskill");
-            entity.Property(e => e.Scroll)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("scroll");
-            entity.Property(e => e.SearchEnemyNear).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.SearchEnemyXy)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("SearchEnemyXY");
-            entity.Property(e => e.SearchOpenXy)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("SearchOpenXY");
-            entity.Property(e => e.SelectProc).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Seqinput)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("seqinput");
-            entity.Property(e => e.Seqnum)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("seqnum");
+            entity.Property(e => e.Scroll).HasColumnName("scroll");
+            entity.Property(e => e.SearchEnemyXy).HasColumnName("SearchEnemyXY");
+            entity.Property(e => e.SearchOpenXy).HasColumnName("SearchOpenXY");
+            entity.Property(e => e.Seqinput).HasColumnName("seqinput");
+            entity.Property(e => e.Seqnum).HasColumnName("seqnum");
             entity.Property(e => e.Seqtrans)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("seqtrans");
@@ -4728,10 +3491,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Skilldesc)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("skilldesc");
-            entity.Property(e => e.Skpoints)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("skpoints");
-            entity.Property(e => e.SrcDam).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Skpoints).HasColumnName("skpoints");
             entity.Property(e => e.Srvdofunc).HasColumnName("srvdofunc");
             entity.Property(e => e.Srvmissile)
                 .HasColumnType("MEDIUMTEXT")
@@ -4748,39 +3508,22 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Srvoverlay)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("srvoverlay");
-            entity.Property(e => e.Srvprgfunc1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("srvprgfunc1");
-            entity.Property(e => e.Srvprgfunc2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("srvprgfunc2");
-            entity.Property(e => e.Srvprgfunc3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("srvprgfunc3");
-            entity.Property(e => e.Srvstfunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("srvstfunc");
-            entity.Property(e => e.Srvstopfunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("srvstopfunc");
-            entity.Property(e => e.Startmana)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("startmana");
+            entity.Property(e => e.Srvprgfunc1).HasColumnName("srvprgfunc1");
+            entity.Property(e => e.Srvprgfunc2).HasColumnName("srvprgfunc2");
+            entity.Property(e => e.Srvprgfunc3).HasColumnName("srvprgfunc3");
+            entity.Property(e => e.Srvstfunc).HasColumnName("srvstfunc");
+            entity.Property(e => e.Srvstopfunc).HasColumnName("srvstopfunc");
+            entity.Property(e => e.Startmana).HasColumnName("startmana");
             entity.Property(e => e.State1).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.State2).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.State3).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Stsound)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("stsound");
             entity.Property(e => e.Stsoundclass)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("stsoundclass");
-            entity.Property(e => e.Stsounddelay)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("stsounddelay");
-            entity.Property(e => e.Stsuccessonly)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("stsuccessonly");
+            entity.Property(e => e.Stsounddelay).HasColumnName("stsounddelay");
+            entity.Property(e => e.Stsuccessonly).HasColumnName("stsuccessonly");
             entity.Property(e => e.Summode)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("summode");
@@ -4820,39 +3563,19 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Sumskill5)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("sumskill5");
-            entity.Property(e => e.Sumumod)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("sumumod");
-            entity.Property(e => e.TargetAlly).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.TargetCorpse).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.TargetItem).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.TargetPet).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.TargetableOnly).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.TgtPlaceCheck).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Sumumod).HasColumnName("sumumod");
             entity.Property(e => e.Tgtoverlay)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("tgtoverlay");
             entity.Property(e => e.Tgtsound)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("tgtsound");
-            entity.Property(e => e.ToHit).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.ToHitCalc).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.UseAttackRate).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.UseServerMissilesOnRemoteClients)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("useServerMissilesOnRemoteClients");
-            entity.Property(e => e.Usemanaondo)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("usemanaondo");
-            entity.Property(e => e.Warp)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("warp");
-            entity.Property(e => e.Weaponsnd)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("weaponsnd");
-            entity.Property(e => e.Weapsel)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("weapsel");
+            entity.Property(e => e.UseServerMissilesOnRemoteClients).HasColumnName("useServerMissilesOnRemoteClients");
+            entity.Property(e => e.Usemanaondo).HasColumnName("usemanaondo");
+            entity.Property(e => e.Warp).HasColumnName("warp");
+            entity.Property(e => e.Weaponsnd).HasColumnName("weaponsnd");
+            entity.Property(e => e.Weapsel).HasColumnName("weapsel");
         });
 
         modelBuilder.Entity<Skillcalc>(entity =>
@@ -4879,9 +3602,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.DdamCalc2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("ddam_calc2");
-            entity.Property(e => e.Descatt)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("descatt");
+            entity.Property(e => e.Descatt).HasColumnName("descatt");
             entity.Property(e => e.Desccalca1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("desccalca1");
@@ -4910,29 +3631,17 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Desccalcb4)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("desccalcb4");
-            entity.Property(e => e.Desccalcb5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("desccalcb5");
+            entity.Property(e => e.Desccalcb5).HasColumnName("desccalcb5");
             entity.Property(e => e.Desccalcb6)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("desccalcb6");
-            entity.Property(e => e.Descdam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("descdam");
+            entity.Property(e => e.Descdam).HasColumnName("descdam");
             entity.Property(e => e.Descline1).HasColumnName("descline1");
             entity.Property(e => e.Descline2).HasColumnName("descline2");
-            entity.Property(e => e.Descline3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("descline3");
-            entity.Property(e => e.Descline4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("descline4");
-            entity.Property(e => e.Descline5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("descline5");
-            entity.Property(e => e.Descline6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("descline6");
+            entity.Property(e => e.Descline3).HasColumnName("descline3");
+            entity.Property(e => e.Descline4).HasColumnName("descline4");
+            entity.Property(e => e.Descline5).HasColumnName("descline5");
+            entity.Property(e => e.Descline6).HasColumnName("descline6");
             entity.Property(e => e.Descmissile1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("descmissile1");
@@ -4975,9 +3684,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Desctextb5)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("desctextb5");
-            entity.Property(e => e.Desctextb6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("desctextb6");
+            entity.Property(e => e.Desctextb6).HasColumnName("desctextb6");
             entity.Property(e => e.Dsc2calca1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dsc2calca1");
@@ -5009,18 +3716,10 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dsc2calcb5");
             entity.Property(e => e.Dsc2line1).HasColumnName("dsc2line1");
-            entity.Property(e => e.Dsc2line2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc2line2");
-            entity.Property(e => e.Dsc2line3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc2line3");
-            entity.Property(e => e.Dsc2line4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc2line4");
-            entity.Property(e => e.Dsc2line5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc2line5");
+            entity.Property(e => e.Dsc2line2).HasColumnName("dsc2line2");
+            entity.Property(e => e.Dsc2line3).HasColumnName("dsc2line3");
+            entity.Property(e => e.Dsc2line4).HasColumnName("dsc2line4");
+            entity.Property(e => e.Dsc2line5).HasColumnName("dsc2line5");
             entity.Property(e => e.Dsc2texta1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dsc2texta1");
@@ -5045,13 +3744,11 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Dsc2textb3)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dsc2textb3");
-            entity.Property(e => e.Dsc2textb4)
+            entity.Property(e => e.Dsc2textb4).HasColumnName("dsc2textb4");
+            entity.Property(e => e.Dsc2textb5).HasColumnName("dsc2textb5");
+            entity.Property(e => e.Dsc3calca1)
                 .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc2textb4");
-            entity.Property(e => e.Dsc2textb5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc2textb5");
-            entity.Property(e => e.Dsc3calca1).HasColumnName("dsc3calca1");
+                .HasColumnName("dsc3calca1");
             entity.Property(e => e.Dsc3calca2)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dsc3calca2");
@@ -5093,21 +3790,11 @@ public partial class DatabaseContext : DbContext
                 .HasColumnName("dsc3calcb7");
             entity.Property(e => e.Dsc3line1).HasColumnName("dsc3line1");
             entity.Property(e => e.Dsc3line2).HasColumnName("dsc3line2");
-            entity.Property(e => e.Dsc3line3)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc3line3");
-            entity.Property(e => e.Dsc3line4)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc3line4");
-            entity.Property(e => e.Dsc3line5)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc3line5");
-            entity.Property(e => e.Dsc3line6)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc3line6");
-            entity.Property(e => e.Dsc3line7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc3line7");
+            entity.Property(e => e.Dsc3line3).HasColumnName("dsc3line3");
+            entity.Property(e => e.Dsc3line4).HasColumnName("dsc3line4");
+            entity.Property(e => e.Dsc3line5).HasColumnName("dsc3line5");
+            entity.Property(e => e.Dsc3line6).HasColumnName("dsc3line6");
+            entity.Property(e => e.Dsc3line7).HasColumnName("dsc3line7");
             entity.Property(e => e.Dsc3texta1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dsc3texta1");
@@ -5147,16 +3834,11 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Dsc3textb6)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dsc3textb6");
-            entity.Property(e => e.Dsc3textb7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dsc3textb7");
+            entity.Property(e => e.Dsc3textb7).HasColumnName("dsc3textb7");
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
-            entity.Property(e => e.HireableIconCel).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemProcDesclineCount)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("item_proc_descline_count");
+            entity.Property(e => e.ItemProcDesclineCount).HasColumnName("item_proc_descline_count");
             entity.Property(e => e.ItemProcText)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("item_proc_text");
@@ -5210,90 +3892,40 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("states");
 
-            entity.Property(e => e.Active)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("active");
-            entity.Property(e => e.Armblue)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("armblue");
-            entity.Property(e => e.Armred)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("armred");
-            entity.Property(e => e.Attblue)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("attblue");
-            entity.Property(e => e.Attred)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("attred");
-            entity.Property(e => e.Aura)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("aura");
-            entity.Property(e => e.Bossinv)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("bossinv");
-            entity.Property(e => e.Bossstaydeath)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("bossstaydeath");
-            entity.Property(e => e.Canstack)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("canstack");
+            entity.Property(e => e.Active).HasColumnName("active");
+            entity.Property(e => e.Armblue).HasColumnName("armblue");
+            entity.Property(e => e.Armred).HasColumnName("armred");
+            entity.Property(e => e.Attblue).HasColumnName("attblue");
+            entity.Property(e => e.Attred).HasColumnName("attred");
+            entity.Property(e => e.Aura).HasColumnName("aura");
+            entity.Property(e => e.Bossinv).HasColumnName("bossinv");
+            entity.Property(e => e.Bossstaydeath).HasColumnName("bossstaydeath");
+            entity.Property(e => e.Canstack).HasColumnName("canstack");
             entity.Property(e => e.Castoverlay)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("castoverlay");
-            entity.Property(e => e.Cltactivefunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("cltactivefunc");
+            entity.Property(e => e.Cltactivefunc).HasColumnName("cltactivefunc");
             entity.Property(e => e.Cltevent)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("cltevent");
-            entity.Property(e => e.Clteventfunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("clteventfunc");
-            entity.Property(e => e.Colorpri)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("colorpri");
-            entity.Property(e => e.Colorshift)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("colorshift");
-            entity.Property(e => e.Curable)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("curable");
-            entity.Property(e => e.Curse)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("curse");
-            entity.Property(e => e.Damblue)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("damblue");
-            entity.Property(e => e.Damred)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("damred");
-            entity.Property(e => e.Disguise)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("disguise");
+            entity.Property(e => e.Clteventfunc).HasColumnName("clteventfunc");
+            entity.Property(e => e.Colorpri).HasColumnName("colorpri");
+            entity.Property(e => e.Colorshift).HasColumnName("colorshift");
+            entity.Property(e => e.Curable).HasColumnName("curable");
+            entity.Property(e => e.Curse).HasColumnName("curse");
+            entity.Property(e => e.Damblue).HasColumnName("damblue");
+            entity.Property(e => e.Damred).HasColumnName("damred");
+            entity.Property(e => e.Disguise).HasColumnName("disguise");
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
-            entity.Property(e => e.Exp)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("exp");
-            entity.Property(e => e.Gfxclass)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("gfxclass");
-            entity.Property(e => e.Gfxtype)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("gfxtype");
-            entity.Property(e => e.Green)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("green");
-            entity.Property(e => e.Group)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("group");
-            entity.Property(e => e.Hide)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("hide");
-            entity.Property(e => e.Hidedead)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("hidedead");
+            entity.Property(e => e.Exp).HasColumnName("exp");
+            entity.Property(e => e.Gfxclass).HasColumnName("gfxclass");
+            entity.Property(e => e.Gfxtype).HasColumnName("gfxtype");
+            entity.Property(e => e.Green).HasColumnName("green");
+            entity.Property(e => e.Group).HasColumnName("group");
+            entity.Property(e => e.Hide).HasColumnName("hide");
+            entity.Property(e => e.Hidedead).HasColumnName("hidedead");
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.Itemtrans)
                 .HasColumnType("MEDIUMTEXT")
@@ -5301,39 +3933,19 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Itemtype)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("itemtype");
-            entity.Property(e => e.Life)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("life");
-            entity.Property(e => e.LightB)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("light-b");
-            entity.Property(e => e.LightG)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("light-g");
-            entity.Property(e => e.LightR)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("light-r");
-            entity.Property(e => e.Meleeonly)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("meleeonly");
+            entity.Property(e => e.Life).HasColumnName("life");
+            entity.Property(e => e.LightB).HasColumnName("light-b");
+            entity.Property(e => e.LightG).HasColumnName("light-g");
+            entity.Property(e => e.LightR).HasColumnName("light-r");
+            entity.Property(e => e.Meleeonly).HasColumnName("meleeonly");
             entity.Property(e => e.Missile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("missile");
-            entity.Property(e => e.Monstaydeath)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("monstaydeath");
-            entity.Property(e => e.Noclear)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("noclear");
-            entity.Property(e => e.Nooverlays)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nooverlays");
-            entity.Property(e => e.Nosend)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nosend");
-            entity.Property(e => e.Notondead)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("notondead");
+            entity.Property(e => e.Monstaydeath).HasColumnName("monstaydeath");
+            entity.Property(e => e.Noclear).HasColumnName("noclear");
+            entity.Property(e => e.Nooverlays).HasColumnName("nooverlays");
+            entity.Property(e => e.Nosend).HasColumnName("nosend");
+            entity.Property(e => e.Notondead).HasColumnName("notondead");
             entity.Property(e => e.Offsound)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("offsound");
@@ -5352,84 +3964,42 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Overlay4)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("overlay4");
-            entity.Property(e => e.Pgsv)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("pgsv");
+            entity.Property(e => e.Pgsv).HasColumnName("pgsv");
             entity.Property(e => e.Pgsvoverlay)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("pgsvoverlay");
-            entity.Property(e => e.Plrstaydeath)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("plrstaydeath");
-            entity.Property(e => e.Rcblue)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rcblue");
-            entity.Property(e => e.Rcred)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rcred");
-            entity.Property(e => e.Remfunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("remfunc");
-            entity.Property(e => e.Remhit)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("remhit");
+            entity.Property(e => e.Plrstaydeath).HasColumnName("plrstaydeath");
+            entity.Property(e => e.Rcblue).HasColumnName("rcblue");
+            entity.Property(e => e.Rcred).HasColumnName("rcred");
+            entity.Property(e => e.Remfunc).HasColumnName("remfunc");
+            entity.Property(e => e.Remhit).HasColumnName("remhit");
             entity.Property(e => e.Removerlay)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("removerlay");
-            entity.Property(e => e.Restrict)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("restrict");
-            entity.Property(e => e.Rfblue)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rfblue");
-            entity.Property(e => e.Rfred)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rfred");
-            entity.Property(e => e.Rlblue)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rlblue");
-            entity.Property(e => e.Rlred)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rlred");
-            entity.Property(e => e.Rpblue)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rpblue");
-            entity.Property(e => e.Rpred)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("rpred");
-            entity.Property(e => e.Setfunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("setfunc");
-            entity.Property(e => e.Shatter)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("shatter");
+            entity.Property(e => e.Restrict).HasColumnName("restrict");
+            entity.Property(e => e.Rfblue).HasColumnName("rfblue");
+            entity.Property(e => e.Rfred).HasColumnName("rfred");
+            entity.Property(e => e.Rlblue).HasColumnName("rlblue");
+            entity.Property(e => e.Rlred).HasColumnName("rlred");
+            entity.Property(e => e.Rpblue).HasColumnName("rpblue");
+            entity.Property(e => e.Rpred).HasColumnName("rpred");
+            entity.Property(e => e.Setfunc).HasColumnName("setfunc");
+            entity.Property(e => e.Shatter).HasColumnName("shatter");
             entity.Property(e => e.Skill)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("skill");
-            entity.Property(e => e.Srvactivefunc)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("srvactivefunc");
-            entity.Property(e => e.Stambarblue)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("stambarblue");
+            entity.Property(e => e.Srvactivefunc).HasColumnName("srvactivefunc");
+            entity.Property(e => e.Stambarblue).HasColumnName("stambarblue");
             entity.Property(e => e.Stat)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("stat");
             entity.Property(e => e.State1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("state");
-            entity.Property(e => e.SunderResReduce)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("sunder-res-reduce");
-            entity.Property(e => e.Sunderfull)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("sunderfull");
-            entity.Property(e => e.Transform)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("transform");
-            entity.Property(e => e.Udead)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("udead");
+            entity.Property(e => e.SunderResReduce).HasColumnName("sunder-res-reduce");
+            entity.Property(e => e.Sunderfull).HasColumnName("sunderfull");
+            entity.Property(e => e.Transform).HasColumnName("transform");
+            entity.Property(e => e.Udead).HasColumnName("udead");
         });
 
         modelBuilder.Entity<Storepage>(entity =>
@@ -5458,7 +4028,6 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Mod3).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.MonSound).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Name).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Replaceable).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Stacks).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Superunique1)
                 .HasColumnType("MEDIUMTEXT")
@@ -5494,12 +4063,9 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
-            entity.Property(e => e.FirstLadderSeason)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("firstLadderSeason");
+            entity.Property(e => e.FirstLadderSeason).HasColumnName("firstLadderSeason");
             entity.Property(e => e.Group).HasColumnName("group");
             entity.Property(e => e.Item1).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Item10).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Item2).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Item3).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Item4).HasColumnType("MEDIUMTEXT");
@@ -5508,31 +4074,14 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Item7).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Item8).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Item9).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemProbSum).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ItemProbTotal).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LastLadderSeason)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("lastLadderSeason");
+            entity.Property(e => e.LastLadderSeason).HasColumnName("lastLadderSeason");
             entity.Property(e => e.Level).HasColumnName("level");
-            entity.Property(e => e.Magic).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.NoAlwaysSpawn)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("noAlwaysSpawn");
+            entity.Property(e => e.NoAlwaysSpawn).HasColumnName("noAlwaysSpawn");
             entity.Property(e => e.NoDrop).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Prob10).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Prob4).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Prob5).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Prob6).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Prob7).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Prob8).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Prob9).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Rare).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Set).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.TreasureClass)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("Treasure_Class");
-            entity.Property(e => e.TreasureClassDropChance).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Unique).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.TreasureClassDropChance).HasColumnType("float");
         });
 
         modelBuilder.Entity<Uniqueappellation>(entity =>
@@ -5550,9 +4099,7 @@ public partial class DatabaseContext : DbContext
                 .HasNoKey()
                 .ToTable("uniqueitems");
 
-            entity.Property(e => e.Carry1)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("carry1");
+            entity.Property(e => e.Carry1).HasColumnName("carry1");
             entity.Property(e => e.Chrtransform)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("chrtransform");
@@ -5561,12 +4108,8 @@ public partial class DatabaseContext : DbContext
                 .HasColumnName("code");
             entity.Property(e => e.CostAdd).HasColumnName("cost_add");
             entity.Property(e => e.CostMult).HasColumnName("cost_mult");
-            entity.Property(e => e.Diablocloneweight)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("diablocloneweight");
-            entity.Property(e => e.Dropsfxframe)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("dropsfxframe");
+            entity.Property(e => e.Diablocloneweight).HasColumnName("diablocloneweight");
+            entity.Property(e => e.Dropsfxframe).HasColumnName("dropsfxframe");
             entity.Property(e => e.Dropsound)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dropsound");
@@ -5574,9 +4117,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Eol)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("eol");
-            entity.Property(e => e.FirstLadderSeason)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("firstLadderSeason");
+            entity.Property(e => e.FirstLadderSeason).HasColumnName("firstLadderSeason");
             entity.Property(e => e.Flippyfile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("flippyfile");
@@ -5591,62 +4132,34 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("invtransform");
             entity.Property(e => e.ItemName).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LastLadderSeason)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("lastLadderSeason");
+            entity.Property(e => e.LastLadderSeason).HasColumnName("lastLadderSeason");
             entity.Property(e => e.Lvl).HasColumnName("lvl");
             entity.Property(e => e.LvlReq).HasColumnName("lvl_req");
             entity.Property(e => e.Max1).HasColumnName("max1");
-            entity.Property(e => e.Max10)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max10");
-            entity.Property(e => e.Max11)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max11");
-            entity.Property(e => e.Max12)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max12");
+            entity.Property(e => e.Max10).HasColumnName("max10");
+            entity.Property(e => e.Max11).HasColumnName("max11");
+            entity.Property(e => e.Max12).HasColumnName("max12");
             entity.Property(e => e.Max2).HasColumnName("max2");
             entity.Property(e => e.Max3).HasColumnName("max3");
             entity.Property(e => e.Max4).HasColumnName("max4");
             entity.Property(e => e.Max5).HasColumnName("max5");
             entity.Property(e => e.Max6).HasColumnName("max6");
-            entity.Property(e => e.Max7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max7");
-            entity.Property(e => e.Max8)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max8");
-            entity.Property(e => e.Max9)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("max9");
+            entity.Property(e => e.Max7).HasColumnName("max7");
+            entity.Property(e => e.Max8).HasColumnName("max8");
+            entity.Property(e => e.Max9).HasColumnName("max9");
             entity.Property(e => e.Min1).HasColumnName("min1");
-            entity.Property(e => e.Min10)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min10");
-            entity.Property(e => e.Min11)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min11");
-            entity.Property(e => e.Min12)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min12");
+            entity.Property(e => e.Min10).HasColumnName("min10");
+            entity.Property(e => e.Min11).HasColumnName("min11");
+            entity.Property(e => e.Min12).HasColumnName("min12");
             entity.Property(e => e.Min2).HasColumnName("min2");
             entity.Property(e => e.Min3).HasColumnName("min3");
             entity.Property(e => e.Min4).HasColumnName("min4");
             entity.Property(e => e.Min5).HasColumnName("min5");
             entity.Property(e => e.Min6).HasColumnName("min6");
-            entity.Property(e => e.Min7)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min7");
-            entity.Property(e => e.Min8)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min8");
-            entity.Property(e => e.Min9)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("min9");
-            entity.Property(e => e.Nolimit)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nolimit");
+            entity.Property(e => e.Min7).HasColumnName("min7");
+            entity.Property(e => e.Min8).HasColumnName("min8");
+            entity.Property(e => e.Min9).HasColumnName("min9");
+            entity.Property(e => e.Nolimit).HasColumnName("nolimit");
             entity.Property(e => e.Par1)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("par1");
@@ -5744,90 +4257,36 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Name).HasColumnType("MEDIUMTEXT");
         });
 
-        modelBuilder.Entity<Wanderingmon>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("wanderingmon");
-
-            entity.Property(e => e.Class)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("class");
-        });
-
         modelBuilder.Entity<Weapon>(entity =>
         {
             entity
                 .HasNoKey()
                 .ToTable("weapons");
 
-            entity.Property(e => e.AkaraMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AkaraMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AlkorMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Alternategfx)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("alternategfx");
-            entity.Property(e => e.AnyaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AnyaMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AshearaMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.AutoPrefix)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("auto_prefix");
+            entity.Property(e => e.AutoPrefix).HasColumnName("auto_prefix");
             entity.Property(e => e.Belt)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("belt");
             entity.Property(e => e.Bitfield1).HasColumnName("bitfield1");
-            entity.Property(e => e.CainMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CainMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.CharsiMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Code)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("code");
             entity.Property(e => e.Comment)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("comment");
-            entity.Property(e => e.Compactsave)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("compactsave");
+            entity.Property(e => e.Compactsave).HasColumnName("compactsave");
             entity.Property(e => e.Component).HasColumnName("component");
             entity.Property(e => e.Cost).HasColumnName("cost");
-            entity.Property(e => e.DexBonus).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Diablocloneweight)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("diablocloneweight");
-            entity.Property(e => e.DrognanMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.DrognanMin).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.Diablocloneweight).HasColumnName("diablocloneweight");
             entity.Property(e => e.Dropsfxframe).HasColumnName("dropsfxframe");
             entity.Property(e => e.Dropsound)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("dropsound");
             entity.Property(e => e.Durability).HasColumnName("durability");
             entity.Property(e => e.Durwarning).HasColumnName("durwarning");
-            entity.Property(e => e.ElzixMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.ElzixMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.FaraMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Flippyfile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("flippyfile");
@@ -5839,66 +4298,28 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("gemoffset");
             entity.Property(e => e.Gemsockets).HasColumnName("gemsockets");
-            entity.Property(e => e.GheedMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.GheedMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HalbuMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Hasinv).HasColumnName("hasinv");
             entity.Property(e => e.HellUpgrade).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.HitClass)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("hit_class");
-            entity.Property(e => e.HratliMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.HratliMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Invfile)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("invfile");
             entity.Property(e => e.Invheight).HasColumnName("invheight");
             entity.Property(e => e.Invwidth).HasColumnName("invwidth");
-            entity.Property(e => e.JamellaMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.JamellaMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LarzukMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Level).HasColumnName("level");
             entity.Property(e => e.Levelreq).HasColumnName("levelreq");
             entity.Property(e => e.Lightradius)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("lightradius");
-            entity.Property(e => e.LysanderMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.LysanderMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MagicLvl)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("magic_lvl");
-            entity.Property(e => e.MalahMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.MalahMin).HasColumnType("MEDIUMTEXT");
+            entity.Property(e => e.MagicLvl).HasColumnName("magic_lvl");
             entity.Property(e => e.Maxdam).HasColumnName("maxdam");
-            entity.Property(e => e.Maxmisdam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("maxmisdam");
-            entity.Property(e => e.Maxstack)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("maxstack");
+            entity.Property(e => e.Maxmisdam).HasColumnName("maxmisdam");
+            entity.Property(e => e.Maxstack).HasColumnName("maxstack");
             entity.Property(e => e.Mindam).HasColumnName("mindam");
-            entity.Property(e => e.Minmisdam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("minmisdam");
-            entity.Property(e => e.Minstack)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("minstack");
+            entity.Property(e => e.Minmisdam).HasColumnName("minmisdam");
+            entity.Property(e => e.Minstack).HasColumnName("minstack");
             entity.Property(e => e.Missiletype)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("missiletype");
@@ -5909,26 +4330,16 @@ public partial class DatabaseContext : DbContext
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("namestr");
             entity.Property(e => e.NightmareUpgrade).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.Nodurability)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("nodurability");
+            entity.Property(e => e.Nodurability).HasColumnName("nodurability");
             entity.Property(e => e.Normcode)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("normcode");
-            entity.Property(e => e.OrmusMagicMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMagicMin).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMax).HasColumnType("MEDIUMTEXT");
-            entity.Property(e => e.OrmusMin).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.PermStoreItem).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Qntwarning)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("qntwarning");
-            entity.Property(e => e.Quest)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("quest");
-            entity.Property(e => e.Questdiffcheck)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("questdiffcheck");
+            entity.Property(e => e.Quest).HasColumnName("quest");
+            entity.Property(e => e.Questdiffcheck).HasColumnName("questdiffcheck");
             entity.Property(e => e.Quivered)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("quivered");
@@ -5942,19 +4353,11 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.ShowLevel).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.SkipName).HasColumnType("MEDIUMTEXT");
             entity.Property(e => e.Spawnable).HasColumnName("spawnable");
-            entity.Property(e => e.Spawnstack)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("spawnstack");
+            entity.Property(e => e.Spawnstack).HasColumnName("spawnstack");
             entity.Property(e => e.Speed).HasColumnName("speed");
-            entity.Property(e => e.Stackable)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("stackable");
-            entity.Property(e => e.TmogMax)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("TMogMax");
-            entity.Property(e => e.TmogMin)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("TMogMin");
+            entity.Property(e => e.Stackable).HasColumnName("stackable");
+            entity.Property(e => e.TmogMax).HasColumnName("TMogMax");
+            entity.Property(e => e.TmogMin).HasColumnName("TMogMin");
             entity.Property(e => e.TmogType)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("TMogType");
@@ -5966,9 +4369,7 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Type)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("type");
-            entity.Property(e => e.Type2)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("type2");
+            entity.Property(e => e.Type2).HasColumnName("type2");
             entity.Property(e => e.Ubercode)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("ubercode");
@@ -5993,21 +4394,13 @@ public partial class DatabaseContext : DbContext
             entity.Property(e => e.Wclass)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("wclass");
-            entity.Property(e => e._1or2handed)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("1or2handed");
-            entity.Property(e => e._2handed)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("2handed");
+            entity.Property(e => e._1or2handed).HasColumnName("1or2handed");
+            entity.Property(e => e._2handed).HasColumnName("2handed");
             entity.Property(e => e._2handedwclass)
                 .HasColumnType("MEDIUMTEXT")
                 .HasColumnName("2handedwclass");
-            entity.Property(e => e._2handmaxdam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("2handmaxdam");
-            entity.Property(e => e._2handmindam)
-                .HasColumnType("MEDIUMTEXT")
-                .HasColumnName("2handmindam");
+            entity.Property(e => e._2handmaxdam).HasColumnName("2handmaxdam");
+            entity.Property(e => e._2handmindam).HasColumnName("2handmindam");
         });
 
         OnModelCreatingPartial(modelBuilder);

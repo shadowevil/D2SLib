@@ -14,35 +14,28 @@ using D2SLib;
 using D2SLib.Model.Save;
 
 ....
-//read a save
-D2S character = Core.ReadD2S(File.ReadAllBytes(@"Resources\D2S\1.15\DannyIsGreat.d2s"));
+// Get all D2S Files into an array so we can pick one easily (better to use FileDialog)
+SavedGamesDirectory = (Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments))?.FullName!) + "\\Saved Games\\Diablo II Resurrected\\";
+SavedGames = Directory.GetFiles(SavedGamesDirectory, "*.d2s", SearchOption.TopDirectoryOnly).Select(file => new FileInfo(file)).ToDictionary(f => Path.GetFileNameWithoutExtension(f.Name), f => f.FullName);
 
-//outputs: DannyIsGreat
-Console.WriteLine(character.Name);
+// Open said file using the path we want
+D2S Char = Core.ReadD2S(SavedGames.ElementAt(1).Value);
 
-//convert 1.10-1.114d save to d2r 1.15
-character.Header.Version = 0x61;
+// Modify attributes if you want
+Char.Attributes.Level = 99;
+Char.Attributes.Gold = 10000 * 99;
+Char.Attributes.StashGold = 2500000;
 
- //set all skills to have 20 points
-character.ClassSkills.Skills.ForEach(skill => skill.Points = 20);
-
-//add lvl 31 conviction arua to the first statlist on the first item in your chars inventory
-character.PlayerItemList.Items[0].StatLists[0].Stats.Add(new ItemStat { Stat = "item_aura", Param = 123, Value = 31 });
-
-//write save
-File.WriteAllBytes(Environment.ExpandEnvironmentVariables($"%userprofile%/Saved Games/Diablo II Resurrected Tech Alpha/{character.Name}.d2s"), Core.WriteD2S(character));
+// Optional save as json to be human readable (using JsonConvert (newtonsoft.json package) as it supports decent beautification)
+Char.SaveJsonCharacter(".\\test.json", JsonConvert.SerializeObject(Char, Formatting.Indented));
+// Save the character
+Char.SaveCharacter();
 
 ```
 
 How to seed the library with your own TXT files
 ```
-TXT txt = new TXT();
-txt.ItemStatCostTXT = ItemStatCostTXT.Read(@"ItemStatCost.txt");
-txt.ItemsTXT.ArmorTXT = ArmorTXT.Read(@"Armor.txt");
-txt.ItemsTXT.WeaponsTXT = WeaponsTXT.Read(@"Weapons.txt");
-txt.ItemsTXT.MiscTXT = MiscTXT.Read(@"Misc.txt");
-Core.TXT = txt;
-D2S character = Core.ReadD2S(File.ReadAllBytes(@"DannyIsGreat.d2s"));
+All converted to a SQLite Library as well as tools to convert the library to sql :D
 ```
 
 ##### Useful Links:

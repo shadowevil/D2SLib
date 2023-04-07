@@ -11,7 +11,7 @@ public sealed class Status : IDisposable
         _flags = new InternalBitArray(stackalloc byte[] { flags });
     }
 
-    [JsonIgnore]
+
     public IList<bool> Flags => _flags;
     public bool IsHardcore { get => Flags[2]; set => Flags[2] = value; }
     public bool IsDead { get => Flags[3]; set => Flags[3] = value; }

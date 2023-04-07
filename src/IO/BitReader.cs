@@ -92,6 +92,7 @@ public sealed class BitReader : IBitReader, IDisposable
 
     public byte ReadByte() => ReadByte(8);
 
+
     public ushort ReadUInt16(int bits)
     {
         if ((uint)bits > sizeof(ushort) * 8) throw new ArgumentOutOfRangeException(nameof(bits));

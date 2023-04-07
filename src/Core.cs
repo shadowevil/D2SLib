@@ -22,15 +22,21 @@ public class Core
         set => sqlContext = value;
     }
 
-    public static D2S ReadD2S(string path) => D2S.Read(File.ReadAllBytes(path));
+    public static D2S ReadD2S(string path)
+    {
+        return D2S.Read(File.ReadAllBytes(path), path);
+    }
 
     public static async Task<D2S> ReadD2SAsync(string path, CancellationToken ct = default)
     {
         var bytes = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
-        return D2S.Read(bytes);
+        return D2S.Read(bytes, path);
     }
 
-    public static D2S ReadD2S(ReadOnlySpan<byte> bytes) => D2S.Read(bytes);
+    public static D2S ReadD2S(ReadOnlySpan<byte> bytes, string path)
+    {
+        return D2S.Read(bytes, path);
+    }
 
     public static Item ReadItem(string path, uint version) => ReadItem(File.ReadAllBytes(path), version);
 

@@ -1,7 +1,11 @@
 ﻿using D2SLib.IO;
 using D2SLib.Model.Data;
+using System.Drawing;
+using System.Reflection.Metadata.Ecma335;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json.Serialization;
+using Range = D2SLib.Model.Data.Range;
 
 namespace D2SLib.Model.Save;
 
@@ -49,19 +53,19 @@ public sealed class ItemList : IDisposable
     private ItemList(ushort header, ushort count)
     {
         Header = header;
-        Count = count;
+        NumberOfItems = count;
         Items = new List<Item>(count);
     }
 
-    public ushort? Header { get; set; }
-    public ushort Count { get; set; }
+    private ushort? Header { get; set; }
+    private ushort NumberOfItems { get; set; }
     public List<Item> Items { get; }
 
     public void Write(IBitWriter writer, uint version)
     {
         writer.WriteUInt16(Header ?? 0x4D4A);
-        writer.WriteUInt16(Count);
-        for (int i = 0; i < Count; i++)
+        writer.WriteUInt16(NumberOfItems);
+        for (int i = 0; i < NumberOfItems; i++)
         {
             Items[i].Write(writer, version);
         }
@@ -73,7 +77,7 @@ public sealed class ItemList : IDisposable
             header: reader.ReadUInt16(),
             count: reader.ReadUInt16()
         );
-        for (int i = 0; i < itemList.Count; i++)
+        for (int i = 0; i < itemList.NumberOfItems; i++)
         {
             itemList.Items.Add(Item.Read(reader, version));
         }
@@ -102,10 +106,9 @@ public sealed class Item : IDisposable
 {
     private InternalBitArray _flags = new(4);
 
-    public ushort? Header { get; set; }
+    private ushort? Header { get; set; }
 
-    [JsonIgnore]
-    public IList<bool> Flags
+    private IList<bool> Flags
     {
         get => _flags;
         set
@@ -122,50 +125,123 @@ public sealed class Item : IDisposable
         }
     }
 
-    public string? Version { get; set; }
+    private uint Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string ItemName {
+        get
+        {
+            string rtnStr = "";
+            if (isPersonalized) rtnStr = PersonalizedName + "\'s ";
+
+            switch(Quality)
+            {
+                default:
+                    rtnStr += Core.SqlContext.Localizations.Single(x => x.Key == this.Code.Trim()).EnUs ?? "";
+                    break;
+                case ItemQuality.Set:
+                case ItemQuality.Unique:
+                    return "";
+            }
+
+            return rtnStr;
+        }
+    }
     public ItemLocation itemLocation { get; set; }
     public SlotLocation itemSlot { get; set; }
-    public byte X { get; set; }
-    public byte Y { get; set; }
-    public byte Page { get; set; }
-    public byte EarLevel { get; set; }
-    public string PlayerName { get; set; } = string.Empty; //used for personalized or ears
-    public string Code { get; set; } = string.Empty;
-    public byte NumberOfSocketedItems { get; set; }
-    public byte TotalNumberOfSockets { get; set; }
-    public List<Item> SocketedItems { get; set; } = new();
-    public uint Id { get; set; }
-    public byte ItemLevel { get; set; }
+    public Point gridPosition { get; set; }
+    public Size gridSize { get => new Size((int)Core.SqlContext.GetByCode(this.Code)?.Invwidth!, (int)Core.SqlContext.GetByCode(this.Code)?.Invheight!); }
     public ItemQuality Quality { get; set; }
-    public bool HasMultipleGraphics { get; set; }
-    public byte GraphicId { get; set; }
-    public bool IsAutoAffix { get; set; }
-    public ushort AutoAffixId { get; set; } //?
-    public uint FileIndex { get; set; }
+    public List<Item> SocketedItems { get; set; } = new();
+    public List<ItemStatList> StatLists { get; } = new List<ItemStatList>();
+    public byte ItemLevel { get; set; }
+    public string ItemType { get => Core.SqlContext.GetByCode(this.Code)?.Type!; }
+    public bool IsArmor { get => Core.SqlContext.GetByCode(this.Code) is Armor; }
+    public bool IsWeapon { get => Core.SqlContext.GetByCode(this.Code) is Weapon; }
+    public bool IsMisc { get => Core.SqlContext.GetByCode(this.Code) is Misc; }
+    public bool IsStackable { get => Convert.ToBoolean(Core.SqlContext.GetByCode(this.Code)?.Stackable); }
+    public string InvPath
+    {
+        get
+        {
+            switch (Quality)
+            {
+                default:
+                    return Core.SqlContext.Itemfilepaths.Single(x => x.Key == this.Code.Trim())?.Filepath ?? "";
+                case ItemQuality.Set:
+                    return "";
+                case ItemQuality.Unique:
+                    return "";
+            }
+        }
+    }
+    public bool OneHanded { get => Convert.ToBoolean(((Core.SqlContext.GetByCode(this.Code) as Weapon)?._1or2handed)); }
+    public bool TwoHanded { get => Convert.ToBoolean(((Core.SqlContext.GetByCode(this.Code) as Weapon)?._2handed)); }
+    public Range _1HDamageRange
+    {
+        get
+        {
+            return new Range((int)((Core.SqlContext.GetByCode(this.Code) as Weapon)?.Mindam ?? 0),
+                (int)((Core.SqlContext.GetByCode(this.Code) as Weapon)?.Maxdam ?? 0));
+        }
+    }
+    public Range _2HDamageRange
+    {
+        get
+        {
+            return new Range((int)((Core.SqlContext.GetByCode(this.Code) as Weapon)?._2handmindam ?? 0),
+                (int)((Core.SqlContext.GetByCode(this.Code) as Weapon)?._2handmaxdam ?? 0));
+        }
+    }
+    public bool isIdentified { get => _flags[4]; set => _flags[4] = value; }
+    public bool isSocketed { get => _flags[11]; set => _flags[11] = value; }
+    public bool isNew { get => _flags[13]; set => _flags[13] = value; }
+    public bool isEar { get => _flags[16]; set => _flags[16] = value; }
+    public bool isStarterItem { get => _flags[17]; set => _flags[17] = value; }
+    public bool isCompact { get => _flags[21]; set => _flags[21] = value; }
+    public bool isEthereal { get => _flags[22]; set => _flags[22] = value; }
+    public bool isPersonalized { get => _flags[24]; set => _flags[24] = value; }
+    private string PersonalizedName { get; set; } = string.Empty; //used for personalized or ears
+    public bool isRuneword { get => _flags[26]; set => _flags[26] = value; }
+    public string[] Category
+    {
+        get
+        {
+            List<string> cats = new List<string>();
+            string type = Core.SqlContext.GetByCode(this.Code)?.Type!;
+            Itemtype? iType = Core.SqlContext.Itemtypes.Single(x => x.Code == type);
+            while(iType != null)
+            {
+                cats.Add(iType.ItemType1 ?? "");
+                if (iType.Equiv1 == null) break;
+                iType = Core.SqlContext.Itemtypes.Single(x => x.Code == iType.Equiv1);
+            }
+            return cats.ToArray();
+        }
+    }
+    public uint RunewordId { get; set; }
+    public string? Runeword { get; set; }
+
+    private string? Version { get; set; }
+    public byte Page { get; set; }
+    private byte EarLevel { get; set; }
+    private byte NumberOfSocketedItems { get; set; }
+    private byte TotalNumberOfSockets { get; set; }
+    private bool HasMultipleGraphics { get; set; }
+    private byte GraphicId { get; set; }
+    private bool IsAutoAffix { get; set; }
+    private ushort AutoAffixId { get; set; } //?
+    private uint FileIndex { get; set; }
     public ushort[] MagicPrefixIds { get; set; } = new ushort[3];
     public ushort[] MagicSuffixIds { get; set; } = new ushort[3];
     public ushort RarePrefixId { get; set; }
     public ushort RareSuffixId { get; set; }
-    public uint RunewordId { get; set; }
-    [JsonIgnore]
     public bool HasRealmData { get; set; }
-    [JsonIgnore]
     public uint[] RealmData { get; set; } = new uint[3];
     public ushort Armor { get; set; }
     public ushort MaxDurability { get; set; }
     public ushort Durability { get; set; }
     public ushort Quantity { get; set; }
     public byte SetItemMask { get; set; }
-    public List<ItemStatList> StatLists { get; } = new List<ItemStatList>();
-    public bool IsIdentified { get => _flags[4]; set => _flags[4] = value; }
-    public bool IsSocketed { get => _flags[11]; set => _flags[11] = value; }
-    public bool IsNew { get => _flags[13]; set => _flags[13] = value; }
-    public bool IsEar { get => _flags[16]; set => _flags[16] = value; }
-    public bool IsStarterItem { get => _flags[17]; set => _flags[17] = value; }
-    public bool IsCompact { get => _flags[21]; set => _flags[21] = value; }
-    public bool IsEthereal { get => _flags[22]; set => _flags[22] = value; }
-    public bool IsPersonalized { get => _flags[24]; set => _flags[24] = value; }
-    public bool IsRuneword { get => _flags[26]; set => _flags[26] = value; }
 
     public void Write(IBitWriter writer, uint version)
     {
@@ -174,7 +250,7 @@ public sealed class Item : IDisposable
             writer.WriteUInt16(Header ?? 0x4D4A);
         }
         WriteCompact(writer, this, version);
-        if (!IsCompact)
+        if (!isCompact)
         {
             WriteComplete(writer, this, version);
         }
@@ -199,7 +275,7 @@ public sealed class Item : IDisposable
             item.Header = reader.ReadUInt16();
         }
         ReadCompact(reader, item, version);
-        if (!item.IsCompact)
+        if (!item.isCompact)
         {
             ReadComplete(reader, item, version);
         }
@@ -218,18 +294,26 @@ public sealed class Item : IDisposable
         return writer.ToArray();
     }
 
+
     private static string ReadPlayerName(IBitReader reader)
     {
         Span<char> name = stackalloc char[15];
         for (int i = 0; i < name.Length; i++)
         {
-            name[i] = (char)reader.ReadByte(7);
-            if (name[i] == '\0')
+            if (D2S.Instance?.Header.Version > 0x61)
+            {
+                name[i] = (char)reader.ReadByte(8);
+            }
+            else
+            {
+                name[i] = (char)reader.ReadByte(7);
+            }
+            if (name[i].Equals((char)0x00))
             {
                 break;
             }
         }
-        return new string(name);
+        return new string(name).Trim((char)0x00);
     }
 
     private static void WritePlayerName(IBitWriter writer, string name)
@@ -240,9 +324,11 @@ public sealed class Item : IDisposable
         bytes = bytes[..byteCount];
         for (int i = 0; i < bytes.Length; i++)
         {
-            writer.WriteByte(bytes[i], 7);
+            if(D2S.Instance?.Header.Version > 0x61) writer.WriteByte(bytes[i], 8);
+            else writer.WriteByte(bytes[i], 7);
         }
-        writer.WriteByte((byte)'\0', 7);
+        if (D2S.Instance?.Header.Version > 0x61) writer.WriteByte((byte)'\0', 8);
+        else writer.WriteByte((byte)'\0', 7);
     }
 
     private static void ReadCompact(IBitReader reader, Item item, uint version)
@@ -260,14 +346,13 @@ public sealed class Item : IDisposable
         }
         item.itemLocation = (ItemLocation)reader.ReadByte(3);
         item.itemSlot = (SlotLocation)reader.ReadByte(4);
-        item.X = reader.ReadByte(4);
-        item.Y = reader.ReadByte(4);
+        item.gridPosition = new Point(reader.ReadByte(4), reader.ReadByte(4));
         item.Page = reader.ReadByte(3);
-        if (item.IsEar)
+        if (item.isEar)
         {
             item.FileIndex = reader.ReadByte(3);
             item.EarLevel = reader.ReadByte(7);
-            item.PlayerName = ReadPlayerName(reader);
+            item.PersonalizedName = ReadPlayerName(reader);
         }
         else
         {
@@ -283,7 +368,7 @@ public sealed class Item : IDisposable
                     item.Code += Core.SqlContext.ItemCodeTree.DecodeChar(reader);
                 }
             }
-            item.NumberOfSocketedItems = reader.ReadByte(item.IsCompact ? 1 : 3);
+            item.NumberOfSocketedItems = reader.ReadByte(item.isCompact ? 1 : 3);
         }
     }
 
@@ -293,15 +378,15 @@ public sealed class Item : IDisposable
         {
             flags = new InternalBitArray(32)
             {
-                [04] = item.IsIdentified,
-                [11] = item.IsSocketed,
-                [13] = item.IsNew,
-                [16] = item.IsEar,
-                [17] = item.IsStarterItem,
-                [21] = item.IsCompact,
-                [22] = item.IsEthereal,
-                [24] = item.IsPersonalized,
-                [26] = item.IsRuneword
+                [04] = item.isIdentified,
+                [11] = item.isSocketed,
+                [13] = item.isNew,
+                [16] = item.isEar,
+                [17] = item.isStarterItem,
+                [21] = item.isCompact,
+                [22] = item.isEthereal,
+                [24] = item.isPersonalized,
+                [26] = item.isRuneword
             };
         }
         writer.WriteBits(flags);
@@ -316,14 +401,14 @@ public sealed class Item : IDisposable
         }
         writer.WriteByte((byte)item.itemLocation, 3);
         writer.WriteByte((byte)item.itemSlot, 4);
-        writer.WriteByte(item.X, 4);
-        writer.WriteByte(item.Y, 4);
+        writer.WriteByte((byte)item.gridPosition.X, 4);
+        writer.WriteByte((byte)item.gridPosition.Y, 4);
         writer.WriteByte(item.Page, 3);
-        if (item.IsEar)
+        if (item.isEar)
         {
             writer.WriteUInt32(item.FileIndex, 3);
             writer.WriteByte(item.EarLevel, 7);
-            WritePlayerName(writer, item.PlayerName);
+            WritePlayerName(writer, item.PersonalizedName);
         }
         else
         {
@@ -346,7 +431,7 @@ public sealed class Item : IDisposable
                     }
                 }
             }
-            writer.WriteByte(item.NumberOfSocketedItems, item.IsCompact ? 1 : 3);
+            writer.WriteByte(item.NumberOfSocketedItems, item.isCompact ? 1 : 3);
         }
     }
 
@@ -399,14 +484,19 @@ public sealed class Item : IDisposable
                 break;
         }
         ushort propertyLists = 0;
-        if (item.IsRuneword)
+        if (item.isRuneword)
         {
-            item.RunewordId = reader.ReadUInt32(12);
+            item.RunewordId = reader.ReadUInt16(12);
+            uint tmpRuneId = item.RunewordId;
+            if (tmpRuneId < 75) tmpRuneId -= 26;
+            else tmpRuneId -= 25;
+            item.Runeword = Core.SqlContext.Runes.Single(x => x.Name!.Substring(8) == tmpRuneId.ToString())?.RuneName!;
+            if (item.RunewordId == 2718) item.RunewordId = 48;
             propertyLists |= (ushort)(1 << (reader.ReadUInt16(4) + 1));
         }
-        if (item.IsPersonalized)
+        if (item.isPersonalized)
         {
-            item.PlayerName = ReadPlayerName(reader);
+            item.PersonalizedName = ReadPlayerName(reader);
         }
         var trimmedCode = item.Code.AsSpan().TrimEnd();
         if (trimmedCode.SequenceEqual("tbk") || trimmedCode.SequenceEqual("ibk"))
@@ -419,32 +509,27 @@ public sealed class Item : IDisposable
             //reader.ReadBits(96);
             reader.AdvanceBits(96);
         }
-        bool isArmor = Core.SqlContext.IsArmor(item.Code);
-        bool isWeapon = Core.SqlContext.IsWeapon(item.Code);
-        bool isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Armor>(item.Code)?.Stackable);
-        if (isArmor)
+        if (item.IsArmor)
         {
-            item.Armor = (ushort)(reader.ReadUInt16(11) + Convert.ToUInt32(Core.SqlContext.GetByStat("armorclass").SaveAdd ?? "0"));
-            isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Armor>(item.Code)?.Stackable);
+            item.Armor = (ushort)(reader.ReadUInt16(11) + Convert.ToUInt32(Core.SqlContext.ItemStatCost_GetByStat("armorclass")?.SaveAdd ?? "0"));
         }
-        if (isArmor || isWeapon)
+        if (item.IsArmor || item.IsWeapon)
         {
-            var maxDurabilityStat = Core.SqlContext.GetByStat("maxdurability");
-            var durabilityStat = Core.SqlContext.GetByStat("maxdurability");
-            item.MaxDurability = (ushort)(reader.ReadUInt16(Convert.ToUInt16(maxDurabilityStat.SaveBits ?? 0)) + Convert.ToUInt16(maxDurabilityStat.SaveAdd ?? "0"));
+            var maxDurabilityStat = Core.SqlContext.ItemStatCost_GetByStat("maxdurability");
+            var durabilityStat = Core.SqlContext.ItemStatCost_GetByStat("maxdurability");
+            item.MaxDurability = (ushort)(reader.ReadUInt16(Convert.ToUInt16(maxDurabilityStat?.SaveBits ?? 0)) + Convert.ToUInt16(maxDurabilityStat?.SaveAdd ?? "0"));
             if (item.MaxDurability > 0)
             {
-                item.Durability = (ushort)(reader.ReadUInt16(Convert.ToUInt16(durabilityStat.SaveBits ?? 0)) + Convert.ToUInt16(durabilityStat.SaveAdd ?? "0"));
+                item.Durability = (ushort)(reader.ReadUInt16(Convert.ToUInt16(durabilityStat?.SaveBits ?? 0)) + Convert.ToUInt16(durabilityStat?.SaveAdd ?? "0"));
                 //what is this?
                 reader.ReadBit();
             }
-            isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Weapon>(item.Code)?.Stackable);
         }
-        if (isStackable)
+        if (item.IsStackable)
         {
             item.Quantity = reader.ReadUInt16(9);
         }
-        if (item.IsSocketed)
+        if (item.isSocketed)
         {
             item.TotalNumberOfSockets = reader.ReadByte(4);
         }
@@ -517,15 +602,15 @@ public sealed class Item : IDisposable
                 break;
         }
         ushort propertyLists = 0;
-        if (item.IsRuneword)
+        if (item.isRuneword)
         {
             writer.WriteUInt32(item.RunewordId, 12);
             propertyLists |= 1 << 6;
             writer.WriteUInt16(5, 4);
         }
-        if (item.IsPersonalized)
+        if (item.isPersonalized)
         {
-            WritePlayerName(writer, item.PlayerName);
+            WritePlayerName(writer, item.PersonalizedName);
         }
         var trimmedCode = item.Code.AsSpan().Trim();
         if (trimmedCode.SequenceEqual("tbk") || trimmedCode.SequenceEqual("ibk"))
@@ -537,31 +622,27 @@ public sealed class Item : IDisposable
         {
             //todo 96 bits
         }
-        bool isArmor = Core.SqlContext.IsArmor(item.Code);
-        bool isWeapon = Core.SqlContext.IsWeapon(item.Code);
-        bool isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Misc>(item.Code)?.Stackable);
-        if (isArmor)
+        if (item.IsArmor)
         {
-            writer.WriteUInt16((ushort)(item.Armor - Convert.ToUInt32(Core.SqlContext.GetByStat("armorclass").SaveAdd ?? "0")), 11);
-            isStackable = Convert.ToBoolean(Core.SqlContext.GetByCode<Armor>(item.Code)?.Stackable);
+            writer.WriteUInt16((ushort)(item.Armor - Convert.ToUInt32(Core.SqlContext.ItemStatCost_GetByStat("armorclass")?.SaveAdd ?? "0")), 11);
         }
-        if (isArmor || isWeapon)
+        if (item.IsArmor || item.IsWeapon)
         {
-            var maxDurabilityStat = Core.SqlContext.GetByStat("maxdurability");
-            var durabilityStat = Core.SqlContext.GetByStat("maxdurability");
-            writer.WriteUInt16((ushort)(item.MaxDurability - Convert.ToUInt32(maxDurabilityStat.SaveAdd ?? "0")), Convert.ToInt32(maxDurabilityStat.SaveBits ?? 0));
+            var maxDurabilityStat = Core.SqlContext.ItemStatCost_GetByStat("maxdurability");
+            var durabilityStat = Core.SqlContext.ItemStatCost_GetByStat("maxdurability");
+            writer.WriteUInt16((ushort)(item.MaxDurability - Convert.ToUInt32(maxDurabilityStat?.SaveAdd ?? "0")), Convert.ToInt32(maxDurabilityStat?.SaveBits ?? 0));
             if (item.MaxDurability > 0)
             {
-                writer.WriteUInt16((ushort)(item.MaxDurability - Convert.ToUInt32(durabilityStat.SaveAdd ?? "0")), Convert.ToInt32(durabilityStat.SaveBits ?? 0));
+                writer.WriteUInt16((ushort)(item.MaxDurability - Convert.ToUInt32(durabilityStat?.SaveAdd ?? "0")), Convert.ToInt32(durabilityStat?.SaveBits ?? 0));
                 ////what is this?
                 writer.WriteBit(false);
             }
         }
-        if (isStackable)
+        if (item.IsStackable)
         {
             writer.WriteUInt16(item.Quantity, 9);
         }
-        if (item.IsSocketed)
+        if (item.isSocketed)
         {
             writer.WriteByte(item.TotalNumberOfSockets, 4);
         }
@@ -631,7 +712,7 @@ public class ItemStatList
         {
             var stat = itemStatList.Stats[i];
             var property = ItemStat.GetStatRow(stat);
-            ushort id = Convert.ToUInt16(property.Id ?? 0);
+            ushort id = Convert.ToUInt16(property?.Id ?? 0);
             writer.WriteUInt16(id, 9);
             ItemStat.Write(writer, stat);
 
@@ -666,7 +747,7 @@ public class ItemStat
     public static ItemStat Read(IBitReader reader, ushort id)
     {
         var itemStat = new ItemStat();
-        var property = Core.SqlContext.GetById(id);
+        var property = Core.SqlContext.ItemStatCost_GetById(id);
         if (property == null)
         {
             throw new Exception($"No ItemStatCost record found for id: {id} at bit {reader.Position - 9}");
@@ -778,10 +859,10 @@ public class ItemStat
         writer.WriteInt32(saveBits, (int)(property.SaveBits ?? 0));
     }
 
-    public static Itemstatcost GetStatRow(ItemStat stat)
+    public static Itemstatcost? GetStatRow(ItemStat stat)
     {
         return stat.Id is ushort statId
-            ? Core.SqlContext.GetById(statId)
-            : Core.SqlContext.GetByStat(stat.Stat);
+            ? Core.SqlContext.ItemStatCost_GetById(statId)
+            : Core.SqlContext.ItemStatCost_GetByStat(stat.Stat);
     }
 }

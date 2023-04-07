@@ -9,9 +9,26 @@ public sealed class D2S : IDisposable
 {
     public static D2S? Instance { get; private set; }
 
-    private D2S(IBitReader reader)
+    public string SaveFilePath { get; private set; }
+
+    public void SaveCharacter(bool backup = true)
+    {
+        if(backup) 
+            if (File.Exists(SaveFilePath)) 
+                File.Move(SaveFilePath, SaveFilePath + ".bak", true);
+
+        File.WriteAllBytes(SaveFilePath, Core.WriteD2S(this));
+    }
+
+    public void SaveJsonCharacter(string path, string JsonSerialized)
+    {
+        File.WriteAllText(path, JsonSerialized);
+    }
+
+    private D2S(IBitReader reader, string path)
     {
         Instance = this;
+        SaveFilePath = path;
         Header = Header.Read(reader);
         ActiveWeapon = reader.ReadUInt32();
         if (Header.Version > 0x61) reader.Seek(267);
@@ -63,15 +80,15 @@ public sealed class D2S : IDisposable
     //0x0024
     public Status Status { get; set; }
     //0x0025
-    [JsonIgnore]
+
     public byte Progression { get; set; }
     //0x0026 [unk = 0x0, 0x0]
-    [JsonIgnore]
+
     public byte[]? active_arms { get; set; }
     //0x0028
     public byte ClassId { get; set; }
     //0x0029 [unk = 0x10, 0x1E]
-    [JsonIgnore]
+
     public byte[]? Unk0x0029 { get; set; }
     //0x002b
     public byte Level { get; set; }
@@ -80,7 +97,7 @@ public sealed class D2S : IDisposable
     //0x0030
     public uint LastPlayed { get; set; }
     //0x0034 [unk = 0xff, 0xff, 0xff, 0xff]
-    [JsonIgnore]
+
     public byte[]? Unk0x0034 { get; set; }
     //0x0038
     public Skill[] AssignedSkills { get; set; }
@@ -99,12 +116,12 @@ public sealed class D2S : IDisposable
     //0x00ab
     public uint MapId { get; set; }
     //0x00af [unk = 0x0, 0x0]
-    [JsonIgnore]
+
     public byte[]? Unk0x00af { get; set; }
     //0x00b1
     public Mercenary Mercenary { get; set; }
     //0x00bf [unk = 0x0] (server related data)
-    [JsonIgnore]
+
     public byte[]? RealmData { get; set; }
     //0x014b
     public QuestsSection Quests { get; set; }
@@ -179,10 +196,10 @@ public sealed class D2S : IDisposable
         }
     }
 
-    public static D2S Read(ReadOnlySpan<byte> bytes)
+    public static D2S Read(ReadOnlySpan<byte> bytes, string path)
     {
         using var reader = new BitReader(bytes);
-        var d2s = new D2S(reader);
+        var d2s = new D2S(reader, path);
         Debug.Assert(reader.Position == (bytes.Length * 8));
         return d2s;
     }

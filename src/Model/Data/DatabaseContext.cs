@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using D2SLib.Model.Huffman;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace D2SLib.Model.Data;
 
@@ -30,42 +31,27 @@ public partial class DatabaseContext : DbContext
         return itemCodeTree;
     }
 
-    public T? GetByCode<T>(string code)
+    public DBItem? GetByCode(string code)
     {
-        if (default(T) is Armor)
-        {
-            return (T?)(object?)Armors.FirstOrDefault(x => x.Code == code.Trim());
-        }
-        else if (default(T) is Weapon)
-        {
-            return (T?)(object?)Weapons.FirstOrDefault(x => x.Code == code.Trim());
-        }
-        else if (default(T) is Misc)
-        {
-            return (T?)(object?)Miscs.FirstOrDefault(x => x.Code == code.Trim());
-        }
-        return default(T);
+        return Armors.FirstOrDefault(x => x.Code == code.Trim()) as DBItem
+            ?? Weapons.FirstOrDefault(x => x.Code == code.Trim()) as DBItem
+            ?? Miscs.FirstOrDefault(x => x.Code == code.Trim()) as DBItem;
     }
 
-    public bool IsArmor(string code) => Armors.Where(x => x.Code == code.Trim()).FirstOrDefault() is not null;
-    public bool IsWeapon(string code) => Weapons.Where(x => x.Code == code.Trim()).FirstOrDefault() is not null;
-    public bool IsMisc(string code) => Miscs.Where(x => x.Code == code.Trim()).FirstOrDefault() is not null;
 
-    public Itemstatcost GetByStat(string stat)
+    public Itemstatcost? ItemStatCost_GetByStat(string stat)
     {
         return Itemstatcosts.First(x => x.Stat == stat);
     }
 
-    public Itemstatcost GetById(ushort id)
+    public Itemstatcost? ItemStatCost_GetById(ushort id)
     {
-        return Itemstatcosts.First(x => x.Id == id);
+        return Itemstatcosts.SingleOrDefault(x => x.Id == id);
     }
 
-
-
-
-
-
+    public virtual DbSet<Itemfilepath> Itemfilepaths { get; set; }
+    public virtual DbSet<Setfilepath> Setfilepaths { get; set; }
+    public virtual DbSet<Uniquefilepath> Uniquefilepaths { get; set; }
 
     public virtual DbSet<Actinfo> Actinfos { get; set; }
 
@@ -200,7 +186,7 @@ public partial class DatabaseContext : DbContext
     public virtual DbSet<Weapon> Weapons { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlite("Data Source=C:\\Users\\ShadowEvil\\Desktop\\D2R Source\\Database\\database.db");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -4401,6 +4387,30 @@ public partial class DatabaseContext : DbContext
                 .HasColumnName("2handedwclass");
             entity.Property(e => e._2handmaxdam).HasColumnName("2handmaxdam");
             entity.Property(e => e._2handmindam).HasColumnName("2handmindam");
+        });
+
+        modelBuilder.Entity<Setfilepath>(entity =>
+        {
+            entity.HasKey(e => e.Key);
+
+            entity.ToTable("setfilepaths");
+        });
+
+        modelBuilder.Entity<Itemfilepath>(entity =>
+        {
+            entity.HasKey(e => e.Key);
+
+            entity.ToTable("itemfilepaths");
+
+            entity.Property(e => e.Key).HasColumnName("key");
+            entity.Property(e => e.Filepath).HasColumnName("filepath");
+        });
+
+        modelBuilder.Entity<Uniquefilepath>(entity =>
+        {
+            entity.HasKey(e => e.Key);
+
+            entity.ToTable("uniquefilepaths");
         });
 
         OnModelCreatingPartial(modelBuilder);

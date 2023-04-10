@@ -8,9 +8,10 @@ namespace D2SLib.Model.Data;
 
 public partial class DatabaseContext : DbContext
 {
+    private readonly string ConfigFilePath = Directory.GetCurrentDirectory() + "\\D2SLib.config";
+
     public DatabaseContext()
-    {
-    }
+    {}
 
     public DatabaseContext(DbContextOptions<DatabaseContext> options)
         : base(options)
@@ -186,8 +187,28 @@ public partial class DatabaseContext : DbContext
     public virtual DbSet<Weapon> Weapons { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlite("Data Source=C:\\Users\\ShadowEvil\\Desktop\\D2R Source\\Database\\database.db");
+    {
+        if (!File.Exists(ConfigFilePath))
+        {
+            using (StreamWriter sw = new StreamWriter(File.OpenWrite(ConfigFilePath)))
+            {
+                sw.WriteLine("[D2SLib Configuration File]");
+                sw.WriteLine("DatabaseLocation = \"NOT CONFIGURED\"");
+            }
+        }
+        if (File.ReadAllLines(ConfigFilePath).First() != "[D2SLib Configuration File]") throw new Exception("Configuration file not setup. Ensure you have set the configuration file properly.");
+        string SQLiteDBFile = "";
+        foreach (string line in File.ReadAllLines(ConfigFilePath))
+        {
+            if (line.StartsWith("DatabaseLocation"))
+            {
+                SQLiteDBFile = line.Split('\"')[1];
+            }
+        }
+        if (SQLiteDBFile.Length <= 0) throw new Exception("Unable to read configuration file. Ensure the DatabaseLocation config variable is set properly.");
+        if(SQLiteDBFile == "NOT CONFIGURED") throw new Exception("Configuration file is default. Ensure the DatabaseLocation config variable is set properly.");
+        optionsBuilder.UseSqlite($"Data Source={SQLiteDBFile}");
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

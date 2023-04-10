@@ -24,6 +24,97 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="CommunityToolkit.HighPerformance">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\CommunityToolkit.HighPerformance.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Data.Sqlite">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Data.Sqlite.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.EntityFrameworkCore.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.Abstractions">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.EntityFrameworkCore.Abstractions.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.Relational">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.Sqlite">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.EntityFrameworkCore.Sqlite.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Caching.Abstractions">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Caching.Memory">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.Caching.Memory.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyModel">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.DependencyModel.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.Logging.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.Options.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Microsoft.Extensions.Primitives.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\Newtonsoft.Json.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.batteries_v2">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\SQLitePCLRaw.batteries_v2.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.core">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\SQLitePCLRaw.core.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="SQLitePCLRaw.provider.e_sqlite3">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\SQLitePCLRaw.provider.e_sqlite3.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\System.Text.Encodings.Web.dll</HintPath>
+      <Private></Private>
+    </Reference>
+    <Reference Include="System.Text.Json">
+      <HintPath>..\..\D2REditor\D2REditor\bin\Debug\net6.0-windows\System.Text.Json.dll</HintPath>
+      <Private></Private>
+    </Reference>
+  </ItemGroup>
 </Project>

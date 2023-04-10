@@ -1,8 +1,10 @@
 ﻿using D2SLib.IO;
-using D2SLib.Model.Save;
+using D2SLib.Model.Structure;
 using CommunityToolkit.HighPerformance.Buffers;
 using Microsoft.EntityFrameworkCore;
 using D2SLib.Model.Data;
+using System.Reflection;
+using System.IO;
 
 namespace D2SLib;
 
@@ -79,5 +81,4 @@ public class Core
     }
 
     public static byte[] WriteD2I(D2I d2i, uint version) => D2I.Write(d2i, version);
-
 }

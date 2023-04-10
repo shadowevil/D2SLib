@@ -1,6 +1,6 @@
 ﻿using D2SLib.IO;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 public sealed class CorpseList : IDisposable
 {

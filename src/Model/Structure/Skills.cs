@@ -1,13 +1,13 @@
 ﻿using D2SLib.IO;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 public class ClassSkills
 {
     private const int SKILL_COUNT = 30;
 
     private static readonly uint[] SKILL_OFFSETS = { 6, 36, 66, 96, 126, 221, 251 };
-    public ushort? Header { get; set; }
+    private ushort? Header { get; set; }
     public List<ClassSkill> Skills { get; } = new List<ClassSkill>(SKILL_COUNT);
 
     public ClassSkill this[int i] => Skills[i];
@@ -55,6 +55,7 @@ public class ClassSkills
 public class ClassSkill
 {
     public uint Id { get; set; }
+    public string SkillName => Core.SqlContext.Skills.Single(x => x.Id == this.Id)?.Skill1 ?? "Not Found";
     public byte Points { get; set; }
 
     public void Write(IBitWriter writer) => writer.WriteByte(Points);

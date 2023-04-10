@@ -1,4 +1,4 @@
-﻿using D2SLib.Model.Save;
+﻿using D2SLib.Model.Structure;
 using System;
 using System.Collections.Generic;
 

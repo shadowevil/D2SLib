@@ -1,5 +1,6 @@
 ﻿using D2SLib.IO;
 using D2SLib.Model.Data;
+using System.Collections;
 using System.Drawing;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Range = D2SLib.Model.Data.Range;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 public enum ItemLocation : byte
 {
@@ -48,67 +49,13 @@ public enum ItemQuality : byte
     Tempered
 }
 
-public sealed class ItemList : IDisposable
-{
-    private ItemList(ushort header, ushort count)
-    {
-        Header = header;
-        NumberOfItems = count;
-        Items = new List<Item>(count);
-    }
-
-    private ushort? Header { get; set; }
-    private ushort NumberOfItems { get; set; }
-    public List<Item> Items { get; }
-
-    public void Write(IBitWriter writer, uint version)
-    {
-        writer.WriteUInt16(Header ?? 0x4D4A);
-        writer.WriteUInt16(NumberOfItems);
-        for (int i = 0; i < NumberOfItems; i++)
-        {
-            Items[i].Write(writer, version);
-        }
-    }
-
-    public static ItemList Read(IBitReader reader, uint version)
-    {
-        var itemList = new ItemList(
-            header: reader.ReadUInt16(),
-            count: reader.ReadUInt16()
-        );
-        for (int i = 0; i < itemList.NumberOfItems; i++)
-        {
-            itemList.Items.Add(Item.Read(reader, version));
-        }
-        return itemList;
-    }
-
-    [Obsolete("Try the non-allocating overload!")]
-    public static byte[] Write(ItemList itemList, uint version)
-    {
-        using var writer = new BitWriter();
-        itemList.Write(writer, version);
-        return writer.ToArray();
-    }
-
-    public void Dispose()
-    {
-        foreach (var item in Items)
-        {
-            item?.Dispose();
-        }
-        Items.Clear();
-    }
-}
-
-public sealed class Item : IDisposable
+public class Item : IDisposable
 {
     private InternalBitArray _flags = new(4);
 
     private ushort? Header { get; set; }
 
-    private IList<bool> Flags
+    public IList<bool> Flags
     {
         get => _flags;
         set
@@ -150,11 +97,19 @@ public sealed class Item : IDisposable
     public SlotLocation itemSlot { get; set; }
     public Point gridPosition { get; set; }
     public Size gridSize { get => new Size((int)Core.SqlContext.GetByCode(this.Code)?.Invwidth!, (int)Core.SqlContext.GetByCode(this.Code)?.Invheight!); }
-    public ItemQuality Quality { get; set; }
+    private ItemQuality Quality { get; set; }
+    public string itemQuality { get => Quality.ToString(); set => Quality = (ItemQuality)Convert.ToInt32(value); }
     public List<Item> SocketedItems { get; set; } = new();
     public List<ItemStatList> StatLists { get; } = new List<ItemStatList>();
     public byte ItemLevel { get; set; }
-    public string ItemType { get => Core.SqlContext.GetByCode(this.Code)?.Type!; }
+    public string ItemType
+    {
+        get
+        {
+            string type = Core.SqlContext.GetByCode(this.Code)?.Type!;
+            return Core.SqlContext.Itemtypes.SingleOrDefault(x => x.Code == type)?.ItemType1 ?? "Not Found";
+        }
+    }
     public bool IsArmor { get => Core.SqlContext.GetByCode(this.Code) is Armor; }
     public bool IsWeapon { get => Core.SqlContext.GetByCode(this.Code) is Weapon; }
     public bool IsMisc { get => Core.SqlContext.GetByCode(this.Code) is Misc; }
@@ -670,199 +625,5 @@ public sealed class Item : IDisposable
             item?.Dispose();
         }
         SocketedItems.Clear();
-    }
-}
-
-public class ItemStatList
-{
-    private const ushort magicmindam = 52;
-    private const ushort item_maxdamage_percent = 17;
-    private const ushort firemindam = 48;
-    private const ushort lightmindam = 50;
-    private const ushort coldmindam = 54;
-    private const ushort poisonmindam = 57;
-
-    public List<ItemStat> Stats { get; set; } = new();
-
-    public static ItemStatList Read(IBitReader reader)
-    {
-        var itemStatList = new ItemStatList();
-        ushort id = reader.ReadUInt16(9);
-        while (id != 0x1ff)
-        {
-            itemStatList.Stats.Add(ItemStat.Read(reader, id));
-            //https://github.com/ThePhrozenKeep/D2MOO/blob/master/source/D2Common/src/Items/Items.cpp#L7332
-            if (id is magicmindam or item_maxdamage_percent or firemindam or lightmindam)
-            {
-                itemStatList.Stats.Add(ItemStat.Read(reader, (ushort)(id + 1)));
-            }
-            else if (id is coldmindam or poisonmindam)
-            {
-                itemStatList.Stats.Add(ItemStat.Read(reader, (ushort)(id + 1)));
-                itemStatList.Stats.Add(ItemStat.Read(reader, (ushort)(id + 2)));
-            }
-            id = reader.ReadUInt16(9);
-        }
-        return itemStatList;
-    }
-
-    public static void Write(IBitWriter writer, ItemStatList itemStatList)
-    {
-        for (int i = 0; i < itemStatList.Stats.Count; i++)
-        {
-            var stat = itemStatList.Stats[i];
-            var property = ItemStat.GetStatRow(stat);
-            ushort id = Convert.ToUInt16(property?.Id ?? 0);
-            writer.WriteUInt16(id, 9);
-            ItemStat.Write(writer, stat);
-
-            //assume these stats are in order...
-            //https://github.com/ThePhrozenKeep/D2MOO/blob/master/source/D2Common/src/Items/Items.cpp#L7332
-            if (id is magicmindam or item_maxdamage_percent or firemindam or lightmindam)
-            {
-                ItemStat.Write(writer, itemStatList.Stats[++i]);
-            }
-            else if (id is coldmindam or poisonmindam)
-            {
-                ItemStat.Write(writer, itemStatList.Stats[++i]);
-                ItemStat.Write(writer, itemStatList.Stats[++i]);
-            }
-        }
-        writer.WriteUInt16(0x1ff, 9);
-    }
-
-}
-
-public class ItemStat
-{
-    public ushort? Id { get; set; }
-    public string Stat { get; set; } = string.Empty;
-    public int? SkillTab { get; set; }
-    public int? SkillId { get; set; }
-    public int? SkillLevel { get; set; }
-    public int? MaxCharges { get; set; }
-    public int? Param { get; set; }
-    public int Value { get; set; }
-
-    public static ItemStat Read(IBitReader reader, ushort id)
-    {
-        var itemStat = new ItemStat();
-        var property = Core.SqlContext.ItemStatCost_GetById(id);
-        if (property == null)
-        {
-            throw new Exception($"No ItemStatCost record found for id: {id} at bit {reader.Position - 9}");
-        }
-        itemStat.Id = id;
-        itemStat.Stat = property.Stat ?? "";
-        int saveParamBitCount = Convert.ToInt32(property.SaveParamBits);
-        int encode = Convert.ToInt32(property.Encode);
-        if (saveParamBitCount != 0)
-        {
-            int saveParam = reader.ReadInt32(saveParamBitCount);
-            //todo is there a better way to identify skill tab stats.
-            switch (property.Descfunc)
-            {
-                case 14: //+[value] to [skilltab] Skill Levels ([class] Only) : stat id 188
-                    itemStat.SkillTab = saveParam & 0x7;
-                    itemStat.SkillLevel = (saveParam >> 3) & 0x1fff;
-                    break;
-                default:
-                    break;
-            }
-            switch (encode)
-            {
-                case 2: //chance to cast skill
-                case 3: //skill charges
-                    itemStat.SkillLevel = saveParam & 0x3f;
-                    itemStat.SkillId = (saveParam >> 6) & 0x3ff;
-                    break;
-                case 1:
-                case 4: //by times
-                default:
-                    itemStat.Param = saveParam;
-                    break;
-            }
-        }
-        int saveBits = reader.ReadInt32((int)(property.SaveBits ?? 0));
-        saveBits -= Convert.ToInt32(property.SaveAdd);
-        switch (encode)
-        {
-            case 3: //skill charges
-                itemStat.MaxCharges = (saveBits >> 8) & 0xff;
-                itemStat.Value = saveBits & 0xff;
-                break;
-            default:
-                itemStat.Value = saveBits;
-                break;
-        }
-        return itemStat;
-    }
-
-    public static void Write(IBitWriter writer, ItemStat stat)
-    {
-        var property = GetStatRow(stat);
-        if (property is null)
-        {
-            throw new ArgumentException($"No ItemStatCost record found for id: {stat.Id}", nameof(stat));
-        }
-        int saveParamBitCount = Convert.ToInt32(property.SaveParamBits);
-        int encode = Convert.ToInt32(property.SaveParamBits ?? 0);
-        if (saveParamBitCount != 0)
-        {
-            if (stat.Param != null)
-            {
-                writer.WriteInt32((int)stat.Param, saveParamBitCount);
-            }
-            else
-            {
-                int saveParamBits = 0;
-                switch (property.Descfunc)
-                {
-                    case 14: //+[value] to [skilltab] Skill Levels ([class] Only) : stat id 188
-                        saveParamBits |= (stat.SkillTab ?? 0 & 0x7);
-                        saveParamBits |= ((stat.SkillLevel ?? 0 & 0x1fff) << 3);
-                        break;
-                    default:
-                        break;
-                }
-                switch (encode)
-                {
-                    case 2: //chance to cast skill
-                    case 3: //skill charges
-                        saveParamBits |= (stat.SkillLevel ?? 0 & 0x3f);
-                        saveParamBits |= ((stat.SkillId ?? 0 & 0x3ff) << 6);
-                        break;
-                    case 4: //by times
-                    case 1:
-                    default:
-                        break;
-                }
-                //always use param if it is there.
-                if (stat.Param != null)
-                {
-                    saveParamBits = (int)stat.Param;
-                }
-                writer.WriteInt32(saveParamBits, saveParamBitCount);
-            }
-        }
-        int saveBits = stat.Value;
-        saveBits += Convert.ToInt32(property.SaveAdd);
-        switch (encode)
-        {
-            case 3: //skill charges
-                saveBits &= 0xff;
-                saveBits |= ((stat.MaxCharges ?? 0 & 0xff) << 8);
-                break;
-            default:
-                break;
-        }
-        writer.WriteInt32(saveBits, (int)(property.SaveBits ?? 0));
-    }
-
-    public static Itemstatcost? GetStatRow(ItemStat stat)
-    {
-        return stat.Id is ushort statId
-            ? Core.SqlContext.ItemStatCost_GetById(statId)
-            : Core.SqlContext.ItemStatCost_GetByStat(stat.Stat);
     }
 }

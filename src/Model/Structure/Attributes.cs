@@ -1,6 +1,6 @@
 ﻿using D2SLib.IO;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 //variable size. depends on # of attributes
 public class Attributes
@@ -56,8 +56,8 @@ public class Attributes
         get => (ushort)Stats.Single(x => x.Key == "maxhp").Value;
         set
         {
-            if (value >= 1024) value = 1024;
-            if (value < 0) value = 0;
+            if (value >= 8191) value = 8191;
+            if (value < ushort.MinValue) value = ushort.MinValue;
             Stats["maxhp"] = (int)value;
             Stats["hitpoints"] = (int)value;
         }
@@ -68,8 +68,8 @@ public class Attributes
         get => (ushort)Stats.Single(x => x.Key == "maxmana").Value;
         set
         {
-            if (value >= 1024) value = 1024;
-            if (value < 0) value = 0;
+            if (value >= 8191) value = 8191;
+            if (value < ushort.MinValue) value = ushort.MinValue;
             Stats["maxmana"] = (int)value;
             Stats["mana"] = (int)value;
         }
@@ -80,8 +80,8 @@ public class Attributes
         get => (ushort)Stats.Single(x => x.Key == "stamina").Value;
         set
         {
-            if (value >= 1024) value = 1024;
-            if (value < 0) value = 0;
+            if (value >= 8191) value = 8191;
+            if (value < ushort.MinValue) value = ushort.MinValue;
             Stats["maxstamina"] = (int)value;
             Stats["stamina"] = (int)value;
         }
@@ -158,13 +158,13 @@ public class Attributes
         while (id != 0x1ff)
         {
             var property = Core.SqlContext.ItemStatCost_GetById(id);
-            int attribute = reader.ReadInt32(Convert.ToInt32(property.CsvBits ?? 0));
-            int valShift = Convert.ToInt32(Convert.ToInt32(property.ValShift ?? 0));
+            int attribute = reader.ReadInt32(Convert.ToInt32(property?.CsvBits ?? 0));
+            int valShift = Convert.ToInt32(Convert.ToInt32(property?.ValShift ?? 0));
             if (valShift > 0)
             {
                 attribute >>= valShift;
             }
-            attributes.Stats.Add(property.Stat ?? string.Empty, attribute);
+            attributes.Stats.Add(property?.Stat ?? string.Empty, attribute);
             id = reader.ReadUInt16(9);
         }
         reader.Align();
@@ -177,14 +177,14 @@ public class Attributes
         foreach (var entry in Stats)
         {
             var property = Core.SqlContext.ItemStatCost_GetByStat(entry.Key);
-            writer.WriteUInt16((ushort)(property.Id ?? 0), 9);
+            writer.WriteUInt16((ushort)(property?.Id ?? 0), 9);
             int attribute = entry.Value;
-            int valShift = Convert.ToInt32(property.ValShift ?? 0);
+            int valShift = Convert.ToInt32(property?.ValShift ?? 0);
             if (valShift > 0)
             {
                 attribute <<= valShift;
             }
-            writer.WriteInt32(attribute, Convert.ToInt32(property.CsvBits ?? 0));
+            writer.WriteInt32(attribute, Convert.ToInt32(property?.CsvBits ?? 0));
         }
         writer.WriteUInt16(0x1ff, 9);
         writer.Align();

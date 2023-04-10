@@ -1,6 +1,6 @@
 ﻿using D2SLib.IO;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 public sealed class WaypointsSection : IDisposable
 {
@@ -15,6 +15,13 @@ public sealed class WaypointsSection : IDisposable
     public WaypointsDifficulty Normal => _difficulties[0];
     public WaypointsDifficulty Nightmare => _difficulties[1];
     public WaypointsDifficulty Hell => _difficulties[2];
+
+    public void AddAllWaypoints()
+    {
+        Normal.AddWaypoints();
+        Nightmare.AddWaypoints();
+        Hell.AddWaypoints();
+    }
 
     public void Write(IBitWriter writer)
     {
@@ -39,7 +46,7 @@ public sealed class WaypointsSection : IDisposable
 
         for (int i = 0; i < waypointsSection._difficulties.Length; i++)
         {
-            waypointsSection._difficulties[i] = WaypointsDifficulty.Read(reader);
+            waypointsSection._difficulties[i] = WaypointsDifficulty.Read(new BitReader(reader.ReadBytes(24)));
         }
 
         return waypointsSection;
@@ -91,6 +98,15 @@ public sealed class WaypointsDifficulty : IDisposable
     public ActIIIWaypoints ActIII { get; set; }
     public ActIVWaypoints ActIV { get; set; }
     public ActVWaypoints ActV { get; set; }
+
+    public void AddWaypoints()
+    {
+        ActI.AddWaypoints();
+        ActII.AddWaypoints();
+        ActIII.AddWaypoints();
+        ActIV.AddWaypoints();
+        ActV.AddWaypoints();
+    }
 
     public void Write(IBitWriter writer)
     {
@@ -156,6 +172,11 @@ public sealed class ActIWaypoints : IDisposable
     public bool InnerCloister { get => _flags[7]; set => _flags[7] = value; }
     public bool CatacombsLvl2 { get => _flags[8]; set => _flags[8] = value; }
 
+    public void AddWaypoints()
+    {
+        _flags.SetAll(true);
+    }
+
     public void Write(IBitWriter writer)
     {
         foreach (var flag in _flags)
@@ -189,6 +210,11 @@ public sealed class ActIIWaypoints : IDisposable
     public bool PalaceCellarLvl1 { get => _flags[6]; set => _flags[6] = value; }
     public bool ArcaneSanctuary { get => _flags[7]; set => _flags[7] = value; }
     public bool CanyonOfTheMagi { get => _flags[8]; set => _flags[8] = value; }
+
+    public void AddWaypoints()
+    {
+        _flags.SetAll(true);
+    }
 
     public void Write(IBitWriter writer)
     {
@@ -224,6 +250,11 @@ public sealed class ActIIIWaypoints : IDisposable
     public bool Travincal { get => _flags[7]; set => _flags[7] = value; }
     public bool DuranceOfHateLvl2 { get => _flags[8]; set => _flags[8] = value; }
 
+    public void AddWaypoints()
+    {
+        _flags.SetAll(true);
+    }
+
     public void Write(IBitWriter writer)
     {
         foreach (var flag in _flags)
@@ -251,6 +282,11 @@ public sealed class ActIVWaypoints : IDisposable
     public bool ThePandemoniumFortress { get => _flags[0]; set => _flags[0] = value; }
     public bool CityOfTheDamned { get => _flags[1]; set => _flags[1] = value; }
     public bool RiverOfFlame { get => _flags[2]; set => _flags[2] = value; }
+
+    public void AddWaypoints()
+    {
+        _flags.SetAll(true);
+    }
 
     public void Write(IBitWriter writer)
     {
@@ -285,6 +321,11 @@ public sealed class ActVWaypoints : IDisposable
     public bool FrozenTundra { get => _flags[6]; set => _flags[6] = value; }
     public bool TheAncientsWay { get => _flags[7]; set => _flags[7] = value; }
     public bool WorldstoneKeepLvl2 { get => _flags[8]; set => _flags[8] = value; }
+
+    public void AddWaypoints()
+    {
+        _flags.SetAll(true);
+    }
 
     public void Write(IBitWriter writer)
     {

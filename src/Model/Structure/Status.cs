@@ -1,7 +1,7 @@
 ﻿using D2SLib.IO;
 using System.Text.Json.Serialization;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 public sealed class Status : IDisposable
 {
@@ -12,7 +12,7 @@ public sealed class Status : IDisposable
     }
 
 
-    public IList<bool> Flags => _flags;
+    private IList<bool> Flags => _flags;
     public bool IsHardcore { get => Flags[2]; set => Flags[2] = value; }
     public bool IsDead { get => Flags[3]; set => Flags[3] = value; }
     public bool IsExpansion { get => Flags[5]; set => Flags[5] = value; }

@@ -1,7 +1,7 @@
 ﻿using D2SLib.IO;
 using System.Diagnostics.CodeAnalysis;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 public class Appearances
 {

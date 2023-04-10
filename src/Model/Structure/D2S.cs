@@ -2,8 +2,9 @@
 using CommunityToolkit.HighPerformance.Buffers;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 public sealed class D2S : IDisposable
 {
@@ -20,9 +21,9 @@ public sealed class D2S : IDisposable
         File.WriteAllBytes(SaveFilePath, Core.WriteD2S(this));
     }
 
-    public void SaveJsonCharacter(string path, string JsonSerialized)
+    public void SaveJsonCharacter(string path)
     {
-        File.WriteAllText(path, JsonSerialized);
+        File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
     }
 
     private D2S(IBitReader reader, string path)
@@ -36,13 +37,13 @@ public sealed class D2S : IDisposable
         if (Header.Version > 0x61) reader.Seek(36);
         Status = Status.Read(reader.ReadByte());
         Progression = reader.ReadByte();
-        active_arms = reader.ReadBytes(2);
+        active_arms = reader.ReadUInt16();
         ClassId = reader.ReadByte();
-        Unk0x0029 = reader.ReadBytes(2);
+        reader.ReadBytes(2);
         Level = reader.ReadByte();
         Created = reader.ReadUInt32();
         LastPlayed = reader.ReadUInt32();
-        Unk0x0034 = reader.ReadBytes(4);
+        reader.ReadBytes(4);
         AssignedSkills = Enumerable.Range(0, 16).Select(_ => Skill.Read(reader)).ToArray();
         LeftSkill = Skill.Read(reader);
         RightSkill = Skill.Read(reader);
@@ -51,7 +52,7 @@ public sealed class D2S : IDisposable
         Appearances = Appearances.Read(reader);
         Difficulty = Difficulties.Read(reader);
         MapId = reader.ReadUInt32();
-        Unk0x00af = reader.ReadBytes(2);
+        reader.ReadBytes(2);
         Mercenary = Mercenary.Read(reader);
         if (Header.Version > 0x61) reader.ReadBytes(144);
         else RealmData = reader.ReadBytes(140);
@@ -74,66 +75,52 @@ public sealed class D2S : IDisposable
     //0x0000
     public Header Header { get; set; }
     //0x0010
-    public uint ActiveWeapon { get; set; }
+    private uint ActiveWeapon { get; set; }
     //0x0014 sizeof(16)
     public string Name { get; set; }
     //0x0024
     public Status Status { get; set; }
     //0x0025
-
     public byte Progression { get; set; }
-    //0x0026 [unk = 0x0, 0x0]
-
-    public byte[]? active_arms { get; set; }
+    //0x0026
+    private ushort active_arms { get; set; }
     //0x0028
     public byte ClassId { get; set; }
     //0x0029 [unk = 0x10, 0x1E]
-
-    public byte[]? Unk0x0029 { get; set; }
-    //0x002b
     public byte Level { get; set; }
     //0x002c
     public uint Created { get; set; }
     //0x0030
     public uint LastPlayed { get; set; }
-    //0x0034 [unk = 0xff, 0xff, 0xff, 0xff]
-
-    public byte[]? Unk0x0034 { get; set; }
     //0x0038
-    public Skill[] AssignedSkills { get; set; }
+    private Skill[] AssignedSkills { get; set; }
     //0x0078
-    public Skill LeftSkill { get; set; }
+    private Skill LeftSkill { get; set; }
     //0x007c
-    public Skill RightSkill { get; set; }
+    private Skill RightSkill { get; set; }
     //0x0080
-    public Skill LeftSwapSkill { get; set; }
+    private Skill LeftSwapSkill { get; set; }
     //0x0084
-    public Skill RightSwapSkill { get; set; }
+    private Skill RightSwapSkill { get; set; }
     //0x0088 [char menu appearance]
-    public Appearances Appearances { get; set; }
+    private Appearances Appearances { get; set; }
     //0x00a8
     public Difficulties Difficulty { get; set; }
     //0x00ab
     public uint MapId { get; set; }
-    //0x00af [unk = 0x0, 0x0]
-
-    public byte[]? Unk0x00af { get; set; }
     //0x00b1
     public Mercenary Mercenary { get; set; }
     //0x00bf [unk = 0x0] (server related data)
-
-    public byte[]? RealmData { get; set; }
+    private byte[]? RealmData { get; set; }
     //0x014b
     public QuestsSection Quests { get; set; }
     //0x0279
     public WaypointsSection Waypoints { get; set; }
     //0x02c9
-    public NPCDialogSection NPCDialog { get; set; }
+    private NPCDialogSection NPCDialog { get; set; }
     //0x2fc
     public Attributes Attributes { get; set; }
-
     public ClassSkills ClassSkills { get; set; }
-
     public ItemList PlayerItemList { get; set; }
     public CorpseList PlayerCorpses { get; set; }
     public MercenaryItemList? MercenaryItemList { get; set; }
@@ -148,15 +135,15 @@ public sealed class D2S : IDisposable
         Status.Write(writer);
         writer.WriteByte(Progression);
         //Unk0x0026
-        writer.WriteBytes(active_arms ?? new byte[2]);
+        writer.WriteUInt16(active_arms);
         writer.WriteByte(ClassId);
         //Unk0x0029
-        writer.WriteBytes(Unk0x0029 ?? stackalloc byte[] { 0x10, 0x1e });
+        writer.WriteBytes(stackalloc byte[] { 0x10, 0x1e });
         writer.WriteByte(Level);
         writer.WriteUInt32(Created);
         writer.WriteUInt32(LastPlayed);
         //Unk0x0034
-        writer.WriteBytes(Unk0x0034 ?? stackalloc byte[] { 0xff, 0xff, 0xff, 0xff });
+        writer.WriteBytes(stackalloc byte[] { 0xff, 0xff, 0xff, 0xff });
         for (int i = 0; i < 16; i++)
         {
             AssignedSkills[i].Write(writer);
@@ -169,7 +156,7 @@ public sealed class D2S : IDisposable
         Difficulty.Write(writer);
         writer.WriteUInt32(MapId);
         //0x00af [unk = 0x0, 0x0]
-        writer.WriteBytes(Unk0x00af ?? new byte[2]);
+        writer.WriteBytes(new byte[2]);
         Mercenary.Write(writer);
         if (Header.Version > 0x61)
         {
@@ -180,7 +167,8 @@ public sealed class D2S : IDisposable
         else
         {
             //0x00bf [unk = 0x0] (server related data)
-            writer.WriteBytes(RealmData ?? new byte[140]);
+            writer.WriteBytes(new byte[140]);
+            writer.WriteUInt32(0x1);
         }
         Quests.Write(writer);
         Waypoints.Write(writer);

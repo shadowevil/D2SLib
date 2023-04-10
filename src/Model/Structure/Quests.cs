@@ -1,7 +1,7 @@
 ﻿using D2SLib.IO;
 using System.Diagnostics;
 
-namespace D2SLib.Model.Save;
+namespace D2SLib.Model.Structure;
 
 public sealed class QuestsSection : IDisposable
 {
@@ -19,6 +19,13 @@ public sealed class QuestsSection : IDisposable
     public QuestsDifficulty Normal => _difficulties[0];
     public QuestsDifficulty Nightmare => _difficulties[1];
     public QuestsDifficulty Hell => _difficulties[2];
+
+    public void CompleteAllDifficultyQuests()
+    {
+        Normal.CompleteAllActs();
+        Nightmare.CompleteAllActs();
+        Hell.CompleteAllActs();
+    }
 
     public void Write(IBitWriter writer)
     {
@@ -108,6 +115,15 @@ public sealed class QuestsDifficulty : IDisposable
     public ActIVQuests ActIV { get; set; }
     public ActVQuests ActV { get; set; }
 
+    public void CompleteAllActs()
+    {
+        ActI.CompleteAll();
+        ActII.CompleteAll();
+        ActIII.CompleteAll();
+        ActIV.CompleteAll();
+        ActV.CompleteAll();
+    }
+
     public void Write(IBitWriter writer)
     {
         ActI.Write(writer);
@@ -173,19 +189,28 @@ public sealed class Quest : IDisposable
     public bool CompletedNow { get => _flags[14]; set => _flags[14] = value; }
     public bool CompletedBefore { get => _flags[15]; set => _flags[15] = value; }
 
+    public void CompleteAll()
+    {
+        _flags.SetAll(true);
+    }
+
     public void Write(IBitWriter writer)
     {
-        ushort flags = 0x0;
-        ushort i = 1;
-        foreach (var flag in _flags)
+        //ushort flags = 0x0;
+        //ushort i = 1;
+        //foreach (var flag in _flags)
+        //{
+        //    if (flag)
+        //    {
+        //        flags |= i;
+        //    }
+        //    i <<= 1;
+        //}
+        //writer.WriteUInt16(flags);
+        foreach (bool bit in _flags)
         {
-            if (flag)
-            {
-                flags |= i;
-            }
-            i <<= 1;
+            writer.WriteBit(bit);
         }
-        writer.WriteUInt16(flags);
     }
 
     public static Quest Read(IBitReader reader)
@@ -235,6 +260,14 @@ public sealed class ActIQuests : IDisposable
         }
     }
 
+    public void CompleteAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.CompleteAll();
+        }
+    }
+
     public static ActIQuests Read(IBitReader reader)
     {
         var quests = new ActIQuests();
@@ -266,6 +299,14 @@ public sealed class ActIIQuests : IDisposable
     public Quest TheSummoner => _quests[5];
     public Quest TheSevenTombs => _quests[6];
     public Quest Completion => _quests[7];
+
+    public void CompleteAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.CompleteAll();
+        }
+    }
 
     public void Write(IBitWriter writer)
     {
@@ -306,6 +347,14 @@ public sealed class ActIIIQuests : IDisposable
     public Quest TheBlackenedTemple => _quests[5];
     public Quest TheGuardian => _quests[6];
     public Quest Completion => _quests[7];
+
+    public void CompleteAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.CompleteAll();
+        }
+    }
 
     public void Write(IBitWriter writer)
     {
@@ -348,6 +397,14 @@ public sealed class ActIVQuests : IDisposable
     public Quest Extra1 => _quests[5];
     public Quest Extra2 => _quests[6];
     public Quest Extra3 => _quests[7];
+
+    public void CompleteAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.CompleteAll();
+        }
+    }
 
     public void Write(IBitWriter writer)
     {
@@ -398,6 +455,14 @@ public sealed class ActVQuests : IDisposable
     public Quest Extra6 => _quests[13];
     public Quest Extra7 => _quests[14];
     public Quest Extra8 => _quests[15];
+
+    public void CompleteAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.CompleteAll();
+        }
+    }
 
     public void Write(IBitWriter writer)
     {

@@ -39,7 +39,6 @@ public sealed class D2S : IDisposable
         Progression = reader.ReadByte();
         active_arms = reader.ReadUInt16();
         ClassId = reader.ReadByte();
-        reader.ReadBytes(2);
         Level = reader.ReadByte();
         Created = reader.ReadUInt32();
         LastPlayed = reader.ReadUInt32();

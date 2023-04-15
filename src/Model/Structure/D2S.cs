@@ -26,6 +26,8 @@ public sealed class D2S : IDisposable
         File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
     }
 
+    //public Dictionary<int, byte[]> missingBytes = new Dictionary<int, byte[]>();
+
     private D2S(IBitReader reader, string path)
     {
         Instance = this;
@@ -36,9 +38,10 @@ public sealed class D2S : IDisposable
         Name = reader.ReadString(16);
         if (Header.Version > 0x61) reader.Seek(36);
         Status = Status.Read(reader.ReadByte());
-        Progression = reader.ReadByte();
+        Progression = Progression.ReadProgressionByte(reader);
         active_arms = reader.ReadUInt16();
         ClassId = reader.ReadByte();
+        reader.ReadBytes(2);
         Level = reader.ReadByte();
         Created = reader.ReadUInt32();
         LastPlayed = reader.ReadUInt32();
@@ -77,13 +80,20 @@ public sealed class D2S : IDisposable
     private uint ActiveWeapon { get; set; }
     //0x0014 sizeof(16)
     public string Name { get; set; }
+    public void ChangeName(string value)
+    {
+        SaveFilePath = Directory.GetParent(SaveFilePath) + "\\" + value + Path.GetExtension(SaveFilePath);
+        Name = value;
+    }
+
     //0x0024
     public Status Status { get; set; }
     //0x0025
-    public byte Progression { get; set; }
+    public Progression Progression { get; set; }
     //0x0026
     private ushort active_arms { get; set; }
     //0x0028
+    public Core.Classes CharacterClass => (Core.Classes)ClassId;
     public byte ClassId { get; set; }
     //0x0029 [unk = 0x10, 0x1E]
     public byte Level { get; set; }
@@ -132,7 +142,7 @@ public sealed class D2S : IDisposable
         if (Header.Version < 0x61) writer.WriteString(Name, 16);
         else writer.WriteBytes(new byte[16]);
         Status.Write(writer);
-        writer.WriteByte(Progression);
+        Progression.Write(writer);
         //Unk0x0026
         writer.WriteUInt16(active_arms);
         writer.WriteByte(ClassId);

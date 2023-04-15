@@ -8,92 +8,122 @@ public class Attributes
     private ushort? Header { get; set; }
     private Dictionary<string, int> Stats { get; } = new Dictionary<string, int>();
 
-    public ushort Strength
+    public ulong Strength
     {
         get => (ushort)Stats.Single(x => x.Key == "strength").Value;
         set {
-            if (value >= 1024) value = 1024;
+            if (value >= 1023) value = 1023;
             if (value < 0) value = 0;
+            if (!Stats.ContainsKey("strength")) Stats.Add("strength", 0);
             Stats["strength"] = (int)value;
         }
     }
 
-    public ushort Energy
+    public ulong Energy
     {
         get => (ushort)Stats.Single(x => x.Key == "energy").Value;
         set
         {
-            if (value >= 1024) value = 1024;
+            if (value >= 1023) value = 1023;
             if (value < 0) value = 0;
+            if (!Stats.ContainsKey("energy")) Stats.Add("energy", 0);
             Stats["energy"] = (int)value;
         }
     }
 
-    public ushort Dexterity
+    public ulong Dexterity
     {
         get => (ushort)Stats.Single(x => x.Key == "dexterity").Value;
         set
         {
-            if (value >= 1024) value = 1024;
+            if (value >= 1023) value = 1023;
             if (value < 0) value = 0;
+            if (!Stats.ContainsKey("dexterity")) Stats.Add("dexterity", 0);
             Stats["dexterity"] = (int)value;
         }
     }
 
-    public ushort Vitality
+    public ulong Vitality
     {
         get => (ushort)Stats.Single(x => x.Key == "vitality").Value;
         set
         {
-            if (value >= 1024) value = 1024;
+            if (value >= 1023) value = 1023;
             if (value < 0) value = 0;
+            if (!Stats.ContainsKey("vitality")) Stats.Add("vitality", 0);
             Stats["vitality"] = (int)value;
         }
     }
 
-    public ushort HP
+    public int MaxHP => Stats["maxhp"];
+    public ulong HP
     {
         get => (ushort)Stats.Single(x => x.Key == "maxhp").Value;
         set
         {
             if (value >= 8191) value = 8191;
             if (value < ushort.MinValue) value = ushort.MinValue;
+            if (!Stats.ContainsKey("hitpoints")) Stats.Add("hitpoints", 0);
+            if (!Stats.ContainsKey("maxhp")) Stats.Add("maxhp", 0);
             Stats["maxhp"] = (int)value;
             Stats["hitpoints"] = (int)value;
         }
     }
 
-    public ushort Mana
+    public int MaxMana => Stats["maxmana"];
+    public ulong Mana
     {
         get => (ushort)Stats.Single(x => x.Key == "maxmana").Value;
         set
         {
             if (value >= 8191) value = 8191;
             if (value < ushort.MinValue) value = ushort.MinValue;
+            if (!Stats.ContainsKey("mana")) Stats.Add("mana", 0);
+            if (!Stats.ContainsKey("maxmana")) Stats.Add("maxmana", 0);
             Stats["maxmana"] = (int)value;
             Stats["mana"] = (int)value;
         }
     }
 
-    public ushort Stamina
+    public int MaxStamina => Stats["maxstamina"];
+    public ulong Stamina
     {
         get => (ushort)Stats.Single(x => x.Key == "stamina").Value;
         set
         {
             if (value >= 8191) value = 8191;
             if (value < ushort.MinValue) value = ushort.MinValue;
+            if (!Stats.ContainsKey("stamina")) Stats.Add("stamina", 0);
+            if (!Stats.ContainsKey("maxstamina")) Stats.Add("maxstamina", 0);
             Stats["maxstamina"] = (int)value;
             Stats["stamina"] = (int)value;
         }
     }
 
-    public ushort Level
+    public uint Experience
+    {
+        get
+        {
+            if (Stats.ContainsKey("experience"))
+            {
+                return (uint)Stats["experience"];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+
+    public long Level
     {
         get => (ushort)Stats.Single(x => x.Key == "level").Value;
         set
         {
             if (value >= 99) value = 99;
             if (value <= 1) value = 1;
+            if (!Stats.ContainsKey("level")) Stats.Add("level", 1);
+            if (!Stats.ContainsKey("experience")) Stats.Add("experience", 0);
             Stats["level"] = (int)value;
             D2S.Instance!.Level = (byte)value;
             switch (D2S.Instance?.ClassId)
@@ -123,28 +153,51 @@ public class Attributes
         }
     }
 
-    public int Gold
+    public ulong Gold
     {
-        get => Stats.FirstOrDefault(x => x.Key == "gold").Value;
+        get => (ulong)Stats.FirstOrDefault(x => x.Key == "gold").Value;
         set
         {
-            int maxgold = Level * 10000;
-            if (value >= maxgold) value = maxgold;
+            int maxgold = (int)Level * 10000;
+            if (value >= (ulong)maxgold) value = (ulong)maxgold;
             if (value < 0) value = 0;
             if (!Stats.ContainsKey("gold")) Stats.Add("gold", 0);
-            Stats["gold"] = value;
+            Stats["gold"] = (int)value;
         }
     }
 
-    public int StashGold
+    public ulong StashGold
     {
-        get => Stats.FirstOrDefault(x => x.Key == "goldbank").Value;
+        get => (ulong)Stats.FirstOrDefault(x => x.Key == "goldbank").Value;
         set
         {
             if (value >= 2500000) value = 2500000;
             if (value < 0) value = 0;
             if (!Stats.ContainsKey("goldbank")) Stats.Add("goldbank", 0);
-            Stats["goldbank"] = value;
+            Stats["goldbank"] = (int)value;
+        }
+    }
+
+    public ulong StatPoints
+    {
+        get => (ulong)Stats.FirstOrDefault(x => x.Key == "statpts").Value;
+        set
+        {
+            if (value >= 1023) value = 1023;
+            if (value < 0) value = 0;
+            if (!Stats.ContainsKey("statpts")) Stats.Add("statpts", 0);
+            Stats["statpts"] = (int)value;
+        }
+    }
+    public ulong SkillPoints
+    {
+        get => (ulong)Stats.FirstOrDefault(x => x.Key == "newskills").Value;
+        set
+        {
+            if (value >= 255) value = 255;
+            if (value < 0) value = 0;
+            if (!Stats.ContainsKey("newskills")) Stats.Add("newskills", 0);
+            Stats["newskills"] = (int)value;
         }
     }
 

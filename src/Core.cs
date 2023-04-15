@@ -10,6 +10,17 @@ namespace D2SLib;
 
 public class Core
 {
+    public enum Classes
+    {
+        AMAZON = 0x00,
+        SORCERESS = 0x01,
+        NECROMANCER = 0x02,
+        PALADIN = 0x03,
+        BARBARIAN = 0x04,
+        DRUID = 0x05,
+        ASSASSIN = 0x06
+    }
+
     //private static MetaData? _metaData = null;
     //public static MetaData MetaData
     //{

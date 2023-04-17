@@ -23,7 +23,10 @@ public sealed class D2S : IDisposable
 
     public void SaveJsonCharacter(string path)
     {
-        File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
+        File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented, new JsonSerializerSettings
+                                                                                        {
+                                                                                            NullValueHandling = NullValueHandling.Ignore,
+                                                                                        }));
     }
 
     //public Dictionary<int, byte[]> missingBytes = new Dictionary<int, byte[]>();

@@ -196,17 +196,6 @@ public sealed class Quest : IDisposable
 
     public void Write(IBitWriter writer)
     {
-        //ushort flags = 0x0;
-        //ushort i = 1;
-        //foreach (var flag in _flags)
-        //{
-        //    if (flag)
-        //    {
-        //        flags |= i;
-        //    }
-        //    i <<= 1;
-        //}
-        //writer.WriteUInt16(flags);
         foreach (bool bit in _flags)
         {
             writer.WriteBit(bit);

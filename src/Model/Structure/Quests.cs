@@ -174,21 +174,83 @@ public sealed class Quest : IDisposable
 
     public bool RewardGranted { get => _flags[0]; set => _flags[0] = value; }
     public bool RewardPending { get => _flags[1]; set => _flags[1] = value; }
-    public bool Started { get => _flags[2]; set => _flags[2] = value; }
-    public bool LeftTown { get => _flags[3]; set => _flags[3] = value; }
-    public bool EnterArea { get => _flags[4]; set => _flags[4] = value; }
+    public bool QuestKnown { get => _flags[2]; set => _flags[2] = value; }
+    public bool LookingFor { get => _flags[3]; set => _flags[3] = value; }
+    public bool EnteredQuestZone { get => _flags[4]; set => _flags[4] = value; }
     public bool Custom1 { get => _flags[5]; set => _flags[5] = value; }
     public bool Custom2 { get => _flags[6]; set => _flags[6] = value; }
-    public bool Custom3 { get => _flags[7]; set => _flags[7] = value; }
+    public bool ConsumedScroll { get => _flags[7]; set => _flags[7] = value; }
     public bool Custom4 { get => _flags[8]; set => _flags[8] = value; }
     public bool Custom5 { get => _flags[9]; set => _flags[9] = value; }
     public bool Custom6 { get => _flags[10]; set => _flags[10] = value; }
     public bool Custom7 { get => _flags[11]; set => _flags[11] = value; }
-    public bool QuestLog { get => _flags[12]; set => _flags[12] = value; }
+    public bool QuestLogBook { get => _flags[12]; set => _flags[12] = value; }
     public bool PrimaryGoalAchieved { get => _flags[13]; set => _flags[13] = value; }
     public bool CompletedNow { get => _flags[14]; set => _flags[14] = value; }
     public bool CompletedBefore { get => _flags[15]; set => _flags[15] = value; }
 
+    public bool isQuestKnown => QuestKnown & !RewardGranted & !RewardPending & !LookingFor & !EnteredQuestZone & !PrimaryGoalAchieved & !CompletedNow & !CompletedBefore;
+    public bool isQuestLookingFor => QuestKnown & LookingFor & !RewardGranted & !RewardPending & !EnteredQuestZone & !PrimaryGoalAchieved & !CompletedNow & !CompletedBefore;
+    public bool isQuestStarted => QuestKnown & LookingFor & EnteredQuestZone & !RewardGranted & !RewardPending & !PrimaryGoalAchieved & !CompletedNow & !CompletedBefore;
+    public bool isQuestJustFinished => QuestKnown & LookingFor & EnteredQuestZone & PrimaryGoalAchieved & !CompletedNow & !CompletedBefore;
+    public bool isQuestLongFinished => CompletedBefore & RewardGranted & !RewardPending & !CompletedNow;
+    public bool isRewardPending => RewardPending & CompletedBefore & !RewardGranted;
+
+
+    public void SetQuestKnown()
+    {
+        for (int i = 0; i < _flags.Length; i++) _flags[i] = false;
+        QuestKnown = true;
+    }
+
+    public void SetQuestLookingFor()
+    {
+        for (int i = 0; i < _flags.Length; i++) _flags[i] = false;
+        QuestKnown = true;
+        LookingFor = true;
+    }
+
+    public void SetQuestStarted()
+    {
+        for (int i = 0; i < _flags.Length; i++) _flags[i] = false;
+        QuestKnown = true;
+        LookingFor = true;
+        EnteredQuestZone = true;
+    }
+
+    public void SetQuestJustFinished()
+    {
+        for (int i = 0; i < _flags.Length; i++) _flags[i] = false;
+        QuestKnown = true;
+        LookingFor = true;
+        EnteredQuestZone = true;
+        PrimaryGoalAchieved = true;
+        RewardPending = false;
+        RewardGranted = true;
+    }
+
+    public void SetQuestJustFinished_RewardPending()
+    {
+        for (int i = 0; i < _flags.Length; i++) _flags[i] = false;
+        QuestKnown = true;
+        LookingFor = true;
+        EnteredQuestZone = true;
+        PrimaryGoalAchieved = true;
+        RewardPending = true;
+        RewardGranted = false;
+    }
+
+    public void SetQuestLongFinished()
+    {
+        for (int i = 0; i < _flags.Length; i++) _flags[i] = false;
+        CompletedBefore = true;
+        RewardGranted = true;
+    }
+
+    public void SetQuestUnknown()
+    {
+        _flags.SetAll(false);
+    }
     public void CompleteAll()
     {
         _flags.SetAll(true);
@@ -241,11 +303,56 @@ public sealed class ActIQuests : IDisposable
     public Quest SistersToTheSlaughter => _quests[6];
     public Quest Completion => _quests[7];
 
+    public void SetIntroductionToWarriv()
+    {
+        Introduction.RewardGranted = true;
+    }
+
     public void Write(IBitWriter writer)
     {
         for (int i = 0; i < _quests.Length; i++)
         {
             _quests[i].Write(writer);
+        }
+    }
+
+    public void SetAll_LongFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLongFinished();
+        }
+    }
+
+    public void SetAll_JustFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestJustFinished();
+        }
+    }
+
+    public void SetAll_LookingFor()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLookingFor();
+        }
+    }
+
+    public void SetAll_JustStarted()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestStarted();
+        }
+    }
+
+    public void UnsetAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestUnknown();
         }
     }
 
@@ -289,6 +396,46 @@ public sealed class ActIIQuests : IDisposable
     public Quest TheSevenTombs => _quests[6];
     public Quest Completion => _quests[7];
 
+    public void SetAll_LongFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLongFinished();
+        }
+    }
+
+    public void SetAll_JustFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestJustFinished();
+        }
+    }
+
+    public void SetAll_LookingFor()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLookingFor();
+        }
+    }
+
+    public void SetAll_JustStarted()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestStarted();
+        }
+    }
+
+
+    public void UnsetAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestUnknown();
+        }
+    }
     public void CompleteAll()
     {
         foreach (Quest quest in _quests)
@@ -337,6 +484,46 @@ public sealed class ActIIIQuests : IDisposable
     public Quest TheGuardian => _quests[6];
     public Quest Completion => _quests[7];
 
+    public void SetAll_LongFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLongFinished();
+        }
+    }
+
+    public void SetAll_JustFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestJustFinished();
+        }
+    }
+
+    public void SetAll_LookingFor()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLookingFor();
+        }
+    }
+
+    public void SetAll_JustStarted()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestStarted();
+        }
+    }
+
+
+    public void UnsetAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestUnknown();
+        }
+    }
     public void CompleteAll()
     {
         foreach (Quest quest in _quests)
@@ -386,6 +573,47 @@ public sealed class ActIVQuests : IDisposable
     public Quest Extra1 => _quests[5];
     public Quest Extra2 => _quests[6];
     public Quest Extra3 => _quests[7];
+
+    public void SetAll_LongFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLongFinished();
+        }
+    }
+
+    public void SetAll_JustFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestJustFinished();
+        }
+    }
+
+    public void SetAll_LookingFor()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLookingFor();
+        }
+    }
+
+    public void SetAll_JustStarted()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestStarted();
+        }
+    }
+
+
+    public void UnsetAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestUnknown();
+        }
+    }
 
     public void CompleteAll()
     {
@@ -445,6 +673,46 @@ public sealed class ActVQuests : IDisposable
     public Quest Extra7 => _quests[14];
     public Quest Extra8 => _quests[15];
 
+
+    public void SetAll_LongFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLongFinished();
+        }
+    }
+
+    public void SetAll_JustFinished()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestJustFinished();
+        }
+    }
+
+    public void SetAll_LookingFor()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestLookingFor();
+        }
+    }
+
+    public void SetAll_JustStarted()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestStarted();
+        }
+    }
+
+    public void UnsetAll()
+    {
+        foreach (Quest quest in _quests)
+        {
+            quest.SetQuestUnknown();
+        }
+    }
     public void CompleteAll()
     {
         foreach (Quest quest in _quests)

@@ -256,6 +256,11 @@ public sealed class Quest : IDisposable
         _flags.SetAll(true);
     }
 
+    public void IncompleteAll()
+    {
+        _flags.SetAll(false);
+    }
+
     public void Write(IBitWriter writer)
     {
         foreach (bool bit in _flags)

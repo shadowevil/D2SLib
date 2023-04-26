@@ -121,7 +121,7 @@ public sealed class WaypointsDifficulty : IDisposable
         int endPos = writer.Position;
 
         writer.Align();
-        Span<byte> padding = stackalloc byte[13];
+        Span<byte> padding = stackalloc byte[17];
         padding.Clear();
         writer.WriteBytes(padding);
     }
@@ -177,11 +177,23 @@ public sealed class ActIWaypoints : IDisposable
         _flags.SetAll(true);
     }
 
+    public bool GetWaypoint(int index)
+    {
+        index = Math.Clamp(index, 0, 8);
+        return _flags[index];
+    }
+
+    public void SetWaypoint(int index, bool set)
+    {
+        index = Math.Clamp(index, 0, 8);
+        _flags[index] = set;
+    }
+
     public void Write(IBitWriter writer)
     {
-        foreach (var flag in _flags)
+        for (int i = 0; i < 9; i++)
         {
-            writer.WriteBit(flag);
+            writer.WriteBit(_flags[i]);
         }
     }
 
@@ -216,11 +228,23 @@ public sealed class ActIIWaypoints : IDisposable
         _flags.SetAll(true);
     }
 
+    public bool GetWaypoint(int index)
+    {
+        index = Math.Clamp(index, 0, 8);
+        return _flags[index];
+    }
+
+    public void SetWaypoint(int index, bool set)
+    {
+        index = Math.Clamp(index, 0, 8);
+        _flags[index] = set;
+    }
+
     public void Write(IBitWriter writer)
     {
-        foreach (var flag in _flags)
+        for(int i=0;i<9;i++)
         {
-            writer.WriteBit(flag);
+            writer.WriteBit(_flags[i]);
         }
     }
 
@@ -255,11 +279,23 @@ public sealed class ActIIIWaypoints : IDisposable
         _flags.SetAll(true);
     }
 
+    public void SetWaypoint(int index, bool set)
+    {
+        index = Math.Clamp(index, 0, 8);
+        _flags[index] = set;
+    }
+
+    public bool GetWaypoint(int index)
+    {
+        index = Math.Clamp(index, 0, 8);
+        return _flags[index];
+    }
+
     public void Write(IBitWriter writer)
     {
-        foreach (var flag in _flags)
+        for (int i = 0; i < 9; i++)
         {
-            writer.WriteBit(flag);
+            writer.WriteBit(_flags[i]);
         }
     }
 
@@ -288,11 +324,23 @@ public sealed class ActIVWaypoints : IDisposable
         _flags.SetAll(true);
     }
 
+    public void SetWaypoint(int index, bool set)
+    {
+        index = Math.Clamp(index, 0, 8);
+        _flags[index] = set;
+    }
+
+    public bool GetWaypoint(int index)
+    {
+        index = Math.Clamp(index, 0, 8);
+        return _flags[index];
+    }
+
     public void Write(IBitWriter writer)
     {
-        foreach (var flag in _flags)
+        for (int i = 0; i < 3; i++)
         {
-            writer.WriteBit(flag);
+            writer.WriteBit(_flags[i]);
         }
     }
 
@@ -327,11 +375,23 @@ public sealed class ActVWaypoints : IDisposable
         _flags.SetAll(true);
     }
 
+    public bool GetWaypoint(int index)
+    {
+        index = Math.Clamp(index, 0, 8);
+        return _flags[index];
+    }
+
+    public void SetWaypoint(int index, bool set)
+    {
+        index = Math.Clamp(index, 0, 8);
+        _flags[index] = set;
+    }
+
     public void Write(IBitWriter writer)
     {
-        foreach (var flag in _flags)
+        for (int i = 0; i < 9; i++)
         {
-            writer.WriteBit(flag);
+            writer.WriteBit(_flags[i]);
         }
     }
 
